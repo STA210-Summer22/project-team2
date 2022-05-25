@@ -1,0 +1,32 @@
+---
+title: "Proposal"
+subtitle: "STA 210 - Project"
+author: "Team name - Team member 1, Team member 2, Team member 3, Team member 4"
+format: pdf
+editor: visual
+---
+
+```{r}
+#| label: load-pkg-data
+#| warning: false
+library(tidyverse)
+library(tidymodels)
+
+#mydata <- read_csv(here::here("data", "mydata.csv"))
+```
+
+## Introduction
+
+...
+
+## Data description
+
+...
+
+## Analysis approach
+
+...
+
+## Data dictionary
+
+The data dictionary can be found [here](ADD LINK!!!).

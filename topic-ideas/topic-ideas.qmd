@@ -1,0 +1,89 @@
+---
+title: "Topic ideas"
+subtitle: "STA 210 - Project"
+author: "Team name - Team member 1, Team member 2, Team member 3, Team member 4"
+format: pdf
+editor: visual
+---
+
+# Project idea 1
+
+## Introduction and data
+
+-   State the source of the data set.
+
+-   Describe when and how it was originally collected (by the original data curator, not necessarily how you found the data)
+
+-   Describe the observations and the general characteristics being measured in the data
+
+## Research question
+
+-   Describe a research question you're interested in answering using this data.
+
+## Glimpse of data
+
+-   Use the `glimpse` function to provide an overview of the dataset
+
+```{r}
+#| label: data-1
+
+# add code to load and glimpse data here
+```
+
+\pagebreak
+
+# Project idea 2
+
+## Introduction and data
+
+-   State the source of the data set.
+
+-   Describe when and how it was originally collected (by the original data curator, not necessarily how you found the data)
+
+-   Describe the observations and the general characteristics being measured in the data
+
+## Research question
+
+-   Describe a research question you're interested in answering using this data.
+
+## Glimpse of data
+
+-   Use the `glimpse` function to provide an overview of the dataset
+
+```{r}
+#| label: data-2
+
+# add code to load and glimpse data here
+```
+
+\pagebreak
+
+# Project idea 3
+
+::: callout-important
+Project idea 3 is optional.
+If you decide to submit only 2 ideas, please delete the section headings below and leave a note below stating so.
+If you decide to submit the 3rd idea, please delete this callout.
+:::
+
+## Introduction and data
+
+-   State the source of the data set.
+
+-   Describe when and how it was originally collected (by the original data curator, not necessarily how you found the data)
+
+-   Describe the observations and the general characteristics being measured in the data
+
+## Research question
+
+-   Describe a research question you're interested in answering using this data.
+
+## Glimpse of data
+
+-   Use the `glimpse` function to provide an overview of the dataset
+
+```{r}
+#| label: data-3
+
+# add code to load and glimpse data here
+```
