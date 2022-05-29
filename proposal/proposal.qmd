@@ -22,9 +22,7 @@ redwine <- read.csv("winequality-red.csv", sep = ";")
 
 Project Goal: To identify variables that are important in explaining variation in the response.
 
-We are interested in what factors contribute to the quality of Portuguese "Vinho Verde" red wine. 
-The goal of this dataset is to model wine quality based on physicochemical tests. We believe that this dataset can also be used to analyze the relationship between different chemical compositions and the ratings of red wine quality. 
-We believe this is important because by understanding what chemical compositions affect red wine qualities, it may shed some light in future direction of improving/preserving red wine quality. 
+We are interested in what factors contribute to the quality of Portuguese "Vinho Verde" red wine. The goal of this dataset is to model wine quality based on physicochemical tests. We believe that this dataset can also be used to analyze the relationship between different chemical compositions and the ratings of red wine quality. We believe this is important because by understanding what chemical compositions affect red wine qualities, it may shed some light in future direction of improving/preserving red wine quality.
 
 Out goal is to produce a regression model that best explains how different chemical compositions of the Portuguese "Vinho Verde" red wine affects the variation of the red wine quality.
 
@@ -33,11 +31,13 @@ Out goal is to produce a regression model that best explains how different chemi
 ```{r}
 glimpse(redwine)
 ```
-There are 1599 observations and 12 variables. 
+
+There are 1599 observations and 12 variables.
 
 ```{r}
 summary(redwine)
 ```
+
 ```{r}
 p1  <- ggplot(data = redwine, aes(x = quality) ) + 
   geom_histogram(fill = "pink") 
@@ -84,6 +84,7 @@ p12 <- ggplot(data = redwine, aes(x = alcohol) ) +
 
 plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ncol = 4, nrow = 3)
 ```
+
 Most of the variables are normally distributed. Variables like fixed.acidity, volatile.acidity, citric.acid, residual sugar, free.sulfur.dioxide, total.sulfur.dioxide, sulphates, and alcohol are right-skewed.
 
 ```{r}
@@ -98,7 +99,8 @@ d3 <- ggplot(redwine, aes(x = citric.acid, color = as.factor(quality))) +
 
 plot_grid(d1, d2, d3, ncol = 1, nrow = 3)
 ```
-Red wine with quality points of 5 has the highest peak of density of fixed.acidity at approximate 7 g/dm^3; red wine with quality points of 8 has the highest peak of density of volatile.acidity at approximate 0.3 g/dm^3; red wine with quality points of 4 has the highest peak of density of citric.acid at approximate 0.06 g/dm^3.
+
+Red wine with quality points of 5 has the highest peak of density of fixed.acidity at approximate 7 g/dm\^3; red wine with quality points of 8 has the highest peak of density of volatile.acidity at approximate 0.3 g/dm\^3; red wine with quality points of 4 has the highest peak of density of citric.acid at approximate 0.06 g/dm\^3.
 
 ```{r}
 d4 <- ggplot(redwine, aes(x = residual.sugar, color = as.factor(quality))) + 
@@ -113,7 +115,8 @@ d6 <- ggplot(redwine, aes(x = free.sulfur.dioxide, color = as.factor(quality))) 
 
 plot_grid(d4, d5, d6, ncol = 1, nrow = 3)
 ```
-Redwine with quality points of 8 has the highest peak of density of chlorides at approximate 0.07 g/dm^3.
+
+Redwine with quality points of 8 has the highest peak of density of chlorides at approximate 0.07 g/dm\^3.
 
 ```{r}
 d7 <- ggplot(redwine, aes(x = sulphates, color = as.factor(quality))) + 
@@ -128,6 +131,7 @@ d9 <- ggplot(redwine, aes(x = pH, color = as.factor(quality))) +
 
 plot_grid(d7, d8, d9, ncol = 1, nrow = 3)
 ```
+
 Red wine with quality points of 5 has the highest peak of density of alcohol at approximate 7 vol.
 
 ```{r}
@@ -140,8 +144,8 @@ d11 <- ggplot(redwine, aes(x = density, color = as.factor(quality))) +
 
 plot_grid(d10, d11, ncol = 1, nrow = 2)
 ```
-Red wine with quality points of 5 has the highest peak of density of the density of the liquid at approximate 0.997 g/cm^3.
 
+Red wine with quality points of 5 has the highest peak of density of the density of the liquid at approximate 0.997 g/cm\^3.
 
 ## Analysis approach
 
