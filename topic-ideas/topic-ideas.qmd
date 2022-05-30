@@ -101,11 +101,10 @@ The data was originally uploaded by the user Dgomonov on kaggle.com and sourced 
 
 ```{r}
 #| label: data-3
-
-library(readr)
+#| message: false
+#| warning: false
 air_bnb <- read_csv("data-3/AB_NYC_2019.csv")
 glimpse(air_bnb)
 
 
-# add code to load and glimpse data here
 ```
