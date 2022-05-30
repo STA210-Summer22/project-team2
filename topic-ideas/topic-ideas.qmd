@@ -100,12 +100,8 @@ glimpse(cancer_reg)
 
 -   Describe a research question you're interested in answering using this data.
     -   Which features or predictions (locations, reviews, cost, etc.) have the most influence on airbnb reservations?
-
-    -   What impacts the
 -   Glimpse of data
-
-<!-- -->
-
+-   
 -   Use the `glimpse` function to provide an overview of the dataset
 
 ```{r}
