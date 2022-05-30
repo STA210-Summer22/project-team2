@@ -68,9 +68,9 @@ glimpse(cancer_reg)
 The data was originally uploaded by the user Dgomonov on kaggle.com and sourced from the Airbnb website. The dataset includes listing activities and metrics for New York City, New York in 2019. The data file includes information on hosts, geographical availability, number of reviews, price, neighborhood, availability, and more. There are 48895 observations (each airbnb host) and 16 variables being measured in the data.
 
 ## Research question
-    -   Which features or predictions (locations, reviews, cost, etc.) have the greatest influence on airbnb reservations?
-
-    -   To answer this question, we would use multiple linear regression and a variety of methods to determine which factors or variables are integral in increasing the likelihood that a customer books an Airbnb and fit the "best" model.
+ Which features or predictions (locations, reviews, cost, etc.) have the greatest influence on airbnb reservations?
+\par
+ To answer this question, we would use multiple linear regression and a variety of methods to determine which factors or variables are integral in increasing the likelihood that a customer books an Airbnb and fit the "best" model.
     
 ## Glimpse of data
 
