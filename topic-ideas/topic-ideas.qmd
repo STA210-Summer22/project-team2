@@ -16,18 +16,23 @@ editor: visual
 
 -   Describe the observations and the general characteristics being measured in the data
 
-The Wine Quality dataset was collected from Vinho Verde wine Samples, from the North of Portugal. The data was originally donated in 2009 by Professor Cortez. The specific mechanism of the collection of the data was lab work done on different wines to measure their chemical attributites (like acidity etc.). The quality of the wine however was obtained through the average rating of three wine experts. The dataset is divided into two: Red wine and White wine. Red Wine has 1599 observations, and white wine has 4898 observations (each observation being a specific wine). Information about the wine include but are not limited to:PH,Density,Acidity, and alcohol content. 
+The Wine Quality dataset was collected from Vinho Verde wine Samples, from the North of Portugal. The data was originally donated in 2009 by Professor Cortez. The specific mechanism of the collection of the data was lab work done on different wines to measure their chemical attributites (like acidity etc.). The quality of the wine however was obtained through the average rating of three wine experts. The dataset is divided into two: Red wine and White wine. Red Wine has 1599 observations, and white wine has 4898 observations (each observation being a specific wine). Information about the wine include but are not limited to:PH,Density,Acidity, and alcohol content.
 
 ## Research question
 
--   Describe a research question you're interested in answering using this data.
-Can Wine composition be used to predict it's quality?
-\par
-To answer this question, we would be looking at the input values from the physicochemical tests(acidity, Ph..etc) to determine if there is a relationship between those values and wine quality. If there is a relationship, then we would looking to model this relationship through linear regression, removing some of the corrlinear predictors.
-\par
-Another research question we could explore is: Can chemical composition of wine be used to predict it's color? (white or red)
-\par
-To answer this question, we would be doing the same as above, however, with a focus on logistical regression. Thus, we would be looking at which qualities red and white wine share, and which they don't. Then using those to predict if a wine is red or white. Moreover, if there is a discrepancy in quality, then quality can be also used as a predictor. 
+-   Describe a research question you're interested in answering using this data. Can Wine composition be used to predict it's quality?
+
+    \par
+
+    To answer this question, we would be looking at the input values from the physicochemical tests(acidity, Ph..etc) to determine if there is a relationship between those values and wine quality. If there is a relationship, then we would looking to model this relationship through linear regression, removing some of the corrlinear predictors.
+
+    \par
+
+    Another research question we could explore is: Can chemical composition of wine be used to predict it's color? (white or red)
+
+    \par
+
+    To answer this question, we would be doing the same as above, however, with a focus on logistical regression. Thus, we would be looking at which qualities red and white wine share, and which they don't. Then using those to predict if a wine is red or white. Moreover, if there is a discrepancy in quality, then quality can be also used as a predictor.
 
 ## Glimpse of data
 
@@ -60,10 +65,11 @@ The dataset was originally posted by Noah Rippner on data.world.The dataset was 
 
 ## Research question
 
--   Describe a research question you're interested in answering using this data.
-A research question we want to explore is: Can a county's characteristics (racial composition, gender compositation. etc) be used to predict it's cancer deathrate? If so, What model is best for predicating?
-\par
-To answer this question, we would be looking at many factors from employment rate to racial composition of a county. Using those factor, and many others, we will be fitting models to determine which model is the parsimonious model.  
+-   Describe a research question you're interested in answering using this data. A research question we want to explore is: Can a county's characteristics (racial composition, gender compositation. etc) be used to predict it's cancer deathrate? If so, What model is best for predicating?
+
+    \par
+
+    To answer this question, we would be looking at many factors from employment rate to racial composition of a county. Using those factor, and many others, we will be fitting models to determine which model is the parsimonious model.
 
 ## Glimpse of data
 
@@ -82,10 +88,6 @@ glimpse(cancer_reg)
 
 # Project idea 3
 
-::: callout-important
-Project idea 3 is optional. If you decide to submit only 2 ideas, please delete the section headings below and leave a note below stating so. If you decide to submit the 3rd idea, please delete this callout.
-:::
-
 ## Introduction and data
 
 -   State the source of the data set.
@@ -97,13 +99,18 @@ Project idea 3 is optional. If you decide to submit only 2 ideas, please delete 
 ## Research question
 
 -   Describe a research question you're interested in answering using this data.
+    -   Which features or predictions (locations, reviews, cost, etc.) have the most influence on airbnb reservations?
 
-## Glimpse of data
+    -   What impacts the
+-   Glimpse of data
+
+<!-- -->
 
 -   Use the `glimpse` function to provide an overview of the dataset
 
 ```{r}
 #| label: data-3
+
 
 # add code to load and glimpse data here
 ```
