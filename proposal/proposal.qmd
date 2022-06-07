@@ -1,7 +1,7 @@
 ---
 title: "Proposal"
 subtitle: "STA 210 - Project"
-author: "Team name - Team member 1, Team member 2, Team member 3, Team member 4"
+author: "Team 2 - Alicia Gong, Ashley Chen, Abdel Shehata, Claire Tan"
 format: pdf
 editor: visual
 ---
@@ -14,6 +14,7 @@ library(tidymodels)
 library(dplyr)
 library(ggplot2)
 library(cowplot)
+
 
 redwine <- read.csv("winequality-red.csv", sep = ";")
 whitewine <- read.csv("winequality-white.csv", sep = ";")
@@ -155,7 +156,11 @@ Red wine with quality points of 9 has the highest peak of density of the density
 
 ## Analysis approach
 
-...
+First, we will make visualizations and calculate summary statistics as part of exploratory data analysis. This will give us a better idea of which predictor variables we should focus on. After visualizing the relationships between our quality (the outcome variable) and the other predictor variables, alcohol and density seem to be the strongest predictors for quality of wine. We will also explore the relationship between chemical composition of wine and color of wine.
+
+Since quality is a categorical variable that can take the values 3-9, we will conduct multinomial logistic regression and fit two multiLR models for predicting quality: the first is a reduced model with only alcohol and density as predictors, and the second is a full model. Similarly, since color is a binary variable, we will fit two LR models for predicting color, one reduced and one full. These models will be compared using adjusted R-squared, AIC, and BIC. Then, we wo;; check the conditions for inference. For linearity, we will examine empirical logit plots between each level of the response and the quantitative predictor variables. We will check randomness and independence based on the context of the data and how the observations were collected.
+
+For prediction, we will build two models for each outcome variable based on our previous evaluations of the relationship between the predictor and response variables, then conduct CV and evaluate which model is preferred. We will then fit the models to the testing data and again evaluate the performance of these models using a confusion matrix and ROC curves. Lastly, we will make predictions for some example observations.
 
 ## Data dictionary
 
