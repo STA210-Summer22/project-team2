@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/912444/8b68a8ab6fe34ef49a63a3101d6825ee
+bundleId: https://api.rpubs.com/api/v1/document/912444/8b68a8ab6fe34ef49a63a3101d6825ee
+url: http://rpubs.com/Abdel1412/912444
+when: 1654716233.89742
+lastSyncTime: 1654716233.89743
