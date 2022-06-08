@@ -31,7 +31,7 @@ wine<- slice(wine, sample(1:n()))
 
 ## Introduction
 
-About 234 million hectoliters of wine were consumed in 2020, worldwide, with the US making up approximetly 14% of that consumption. Since Wine composition and wine quality varies widely, it raises the question: what makes a good wine?
+About 234 million hectoliters of wine were consumed in 2020, worldwide, with the US making up approximetly 14% of that consumption (Karlsson 2020). Since Wine composition and wine quality varies widely, it raises the question: what makes a good wine?
 
 \par
 
@@ -178,3 +178,7 @@ For prediction, we will build two models for each outcome variable based on our 
 ## Data dictionary
 
 The data dictionary can be found [here](https://archive.ics.uci.edu/ml/datasets/wine+quality).
+Additioanlly, the cookbook is in rmd file.
+
+## Citation 
+(Will make a citation page for the project later on) Link for [article](https://www.forbes.com/sites/karlsson/2021/12/31/wine-consumption-in-the-world-2020-in-decline-a-detailed-look/#:~:text=The%20world's%20wine%20consumption%20in,the%20lowest%20level%20since%202002.)
