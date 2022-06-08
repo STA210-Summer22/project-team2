@@ -1,0 +1,180 @@
+---
+title: "Proposal"
+subtitle: "STA 210 - Project"
+author: "Team 2 - Alicia Gong, Ashley Chen, Abdel Shehata, Claire Tan"
+format: pdf
+editor: visual
+---
+
+```{r}
+#| label: load-pkg-data
+#| warning: false
+library(tidyverse)
+library(tidymodels)
+library(tidyverse)
+library(tidymodels)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(knitr)
+```
+
+```{r}
+#| label: load data
+redwine <- read.csv("winequality-red.csv", sep = ";")
+whitewine <- read.csv("winequality-white.csv", sep = ";")
+redwine<-redwine%>%mutate(color="red")
+whitewine<-whitewine%>%mutate(color="white")
+wine<-redwine%>%full_join(whitewine)
+wine<- slice(wine, sample(1:n()))
+```
+
+## Introduction
+
+About 234 million hectoliters of wine were consumed in 2020, worldwide, with the US making up approximetly 14% of that consumption. Since Wine composition and wine quality varies widely, it raises the question: what makes a good wine?
+
+\par
+
+To answer that question, we will analyze the wine quality dataset from Vinho Verde vinyard in Portogal, and more importantly try to narrow down our question to make it possible for it to be supported by evidence. Below is the introduction to our research:
+
+\par
+
+Project Goal: To identify variables that are important in explaining variation in the response.
+
+We are interested in what factors contribute to the quality of Portuguese "Vinho Verde" wine. The goal of this dataset is to model wine quality based on physicochemical tests. We believe that this dataset can also be used to analyze the relationship between different chemical compositions and the ratings of wine quality. We believe this is important because by understanding what chemical compositions affect wine qualities, it may shed some light in future direction of improving/preserving wine quality.
+
+Out goal is to produce a classification model that best explains how different chemical compositions of the Portuguese "Vinho Verde" wine affects the variation of the wine quality. ...
+
+## Data description
+
+The Wine Quality dataset was collected from Vinho Verde wine Samples, from the North of Portugal. The data was originally donated in 2009 by Professor Cortez. The specific mechanism of the collection of the data was lab work done on different wines to measure their chemical attributites (like acidity etc.). The quality of the wine however was obtained through the average rating of three wine experts. The dataset is divided into two: Red wine and White wine. Red Wine has 1599 observations, and white wine has 4898 observations (each observation being a specific wine). Information about the wine include but are not limited to:PH,Density,Acidity, and alcohol content.
+
+\par
+
+Each observation is a specific wine from Vinho Verde vinyard. Thus, there might be a little uncertainity in collecting the exact numbers for each numbers. This uncertainity shouldn't be significant in our analysis or project. Thus, we will assume that the values from the
+
+```{r}
+#| label: glimpse
+glimpse(wine)
+```
+
+There are 6497 observations and 13 variables (14 if you include the new response variable added later).
+
+```{r}
+#| label: missing data
+any(is.na(wine))
+
+
+```
+
+There are no NAs in our data, so we shouldn't be concerned about missing data.
+
+```{r}
+#| label: summary
+summary(wine)
+
+```
+
+Here are some important summary statistics that might be useful in our project
+
+```{r}
+#| label: plots
+#| warning: false
+p1  <- ggplot(data = wine, aes(x = quality) ) + 
+  geom_histogram(fill = "pink") 
+
+p2  <- ggplot(data = wine, aes(x = fixed.acidity) ) + 
+  geom_histogram(fill = "pink") 
+
+p3  <- ggplot(data = wine, aes(x = volatile.acidity) ) + 
+  theme(axis.text=element_text(size=9)) + 
+  geom_histogram(fill = "pink") 
+
+p4  <- ggplot(data = wine, aes(x = citric.acid) ) + 
+  theme(axis.text = element_text(size=9)) + 
+  geom_histogram(fill = "pink") 
+
+p5  <- ggplot(data = wine, aes(x = residual.sugar) ) +
+  geom_histogram(fill = "pink")
+
+p6  <- ggplot(data = wine, aes(x = chlorides) ) + 
+  theme(axis.text = element_text(size = 11)) + 
+  geom_histogram(fill = "pink") 
+
+p7  <- ggplot(data = wine, aes(x = free.sulfur.dioxide) ) + 
+  theme(axis.text = element_text(size=9)) + 
+  geom_histogram(fill = "pink") 
+
+p8  <- ggplot(data = wine, aes(x = total.sulfur.dioxide) ) + 
+  theme(axis.text = element_text(size=9)) + 
+  geom_histogram(fill = "pink")
+
+p9  <- ggplot(data = wine, aes(x = density) ) + 
+  theme(axis.text = element_text(size = 7.5)) + 
+  geom_histogram(fill= "pink")
+
+p10 <- ggplot(data = wine, aes(x = pH) ) + 
+  geom_histogram(fill = "pink")
+
+p11 <- ggplot(data = wine, aes(x = sulphates) ) + 
+  theme(axis.text = element_text(size=9)) + 
+  geom_histogram(fill= "pink")
+
+p12 <- ggplot(data = wine, aes(x = alcohol) ) + 
+  geom_histogram(fill= "pink")
+
+plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ncol = 4, nrow = 3)
+
+```
+
+...
+
+## Analysis approach
+
+Our response variable will be based on the quality rating of each wine. We will divide wines into two categeries: "bad or subpar wine" and "Good wine". "Bad or subpar wine" will be wine with a quality rating lower then 7 and "Good wine" is any wine with a quality rating equal or greater than 7. Thus, our response variable will be a categrical variable based on the "quality" variable with the responses:"bad or subpar wine" and "Good wine".
+
+```{r}
+#| label: response factor
+# Creating the categrical factor and visualizing it
+wine<-wine%>%
+  mutate(good_wine=if_else(quality>=7,"1","0"))
+wine<-wine%>%
+  mutate(good_wine_names=if_else(good_wine=="1","Good wine","Bad or subpar wine"))
+ggplot(wine,aes(x=good_wine))+
+  geom_bar()+
+  labs(title="Distribution of Good wine in data",
+       y="Count",
+       x="Good Wine"
+  )
+```
+
+As we can observe the sample is unbalanced with respect to good wine.
+
+```{r}
+#| label: table of color
+# Visualizing the response variable with respect to white and red wine.
+wine %>%
+  count(color, good_wine_names) %>%
+  pivot_wider(names_from = good_wine_names, values_from = n) %>%
+  kable()
+```
+
+...
+
+All variables other than "quality" and "good_wine" will be used in in our model as predicators:11 numerical predicators and 1 categrical predicator.
+
+\par
+
+The Following is our Project Plan:
+
+\par
+
+First, we will make visualizations and calculate summary statistics as part of exploratory data analysis. This will give us a better idea of which predictor variables we should focus on. After visualizing the relationships between our good_wine (the outcome variable) and the other predictor variables, alcohol and density seem to be the strongest predictors for quality of wine (good_wine). We will also explore the relationship between the color of wine and it's quality .
+
+Since good_wine is a categorical variable that can take the values "1" and "0", we will conduct logistic regression and fit two LR models for predicting quality: the first is a full model and the second is a reduced model that accounts for collinearity. These models will be compared using adjusted R-squared, AIC, and BIC. Then, we will check the conditions for inference. For linearity, we will examine empirical logit plots between each level of the response and the quantitative predictor variables. We will check randomness and independence based on the context of the data and how the observations were collected.
+
+For prediction, we will build two models for each outcome variable based on our previous evaluations of the relationship between the predictor and response variables, then conduct CV and evaluate which model is preferred. We will then fit the models to the testing data and again evaluate the performance of these models using a confusion matrix and ROC curves. Lastly, we will make predictions for some example observations.
+
+## Data dictionary
+
+The data dictionary can be found [here](https://archive.ics.uci.edu/ml/datasets/wine+quality).
