@@ -61,9 +61,7 @@ editor: visual
 # Project idea 3
 
 ::: callout-important
-Project idea 3 is optional.
-If you decide to submit only 2 ideas, please delete the section headings below and leave a note below stating so.
-If you decide to submit the 3rd idea, please delete this callout.
+Project idea 3 is optional. If you decide to submit only 2 ideas, please delete the section headings below and leave a note below stating so. If you decide to submit the 3rd idea, please delete this callout.
 :::
 
 ## Introduction and data
