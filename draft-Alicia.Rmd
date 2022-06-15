@@ -14,6 +14,12 @@ library(ggplot2)
 library(cowplot)
 library(knitr)
 library(recipes)
+library(caret)
+library(InformationValue)
+library(ISLR)
+library(MASS)
+library(nnet)
+
 ```
 
 ```{r}
@@ -210,3 +216,45 @@ pchisq(38.508, 4, lower.tail = FALSE)
 The p-value is very small, smaller than the critical value of 0.05 under 95% CI. So we can reject the null hypothesis and conclude that there is enough evidence showing that there is at least 1 beta_j does not equal to 0.
 
 Conclusion: we'll use the full model.
+```{r}
+wine2<-wine%>%mutate(quality=factor(quality,levels=0:10))
+```
+```{r}
+set.seed(22)
+wine_split2 <- initial_split(wine2, prop = 3/4)
+wine_train <- training(wine_split2)
+wine_test <- testing(wine_split2)
+```
+
+```{r}
+full_fit1<- multinom_reg() %>%
+  set_engine("nnet") %>%
+  fit(quality~.,
+  data = wine_train)
+```
+```{r}
+full_fit2<- repair_call(full_fit2, data = wine_train)
+full_fit2_fixed<-full_fit2 %>% extract_fit_engine() 
+```
+```{r}
+newmodel<-stepAIC(full_fit2_fixed,direction="both")
+```
+
+```{r}
+full_fit2%>%tidy()
+newmodel%>%tidy()
+newmodel$AIC
+glance(full_fit1)$AIC
+```
+```{r}
+training_pred <- predict(full_fit2,wine_test)
+
+accuracy <- mean(training_pred$.pred_class == wine_test$quality)
+```
+```{r}
+training_pred$.pred_class<-newmodel%>%predict(wine_test)
+training_pred2<-training_pred%>%mutate(training_pred2=factor(.pred_class,levels=0:10))
+
+accuracy2 <- mean(training_pred2$training_pred2 == wine_test$quality)
+
+```

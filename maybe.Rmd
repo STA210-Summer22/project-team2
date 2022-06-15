@@ -1,0 +1,300 @@
+---
+title: "Draft-1"
+subtitle: "STA 210 - Summer 2022"
+author: "Team 2 - Alicia Gong, Ashley Chen, Abdel Shehata, Claire Tam"
+date: "6-8-2022"
+format: pdf
+editor: visual
+---
+
+## Setup
+
+Load packages and data:
+
+```{r}
+#| label: load-pkg-data
+#| message: false
+#| warning: false
+library(tidyverse)
+library(tidymodels)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(knitr)
+library(recipes)
+library(caret)
+library(InformationValue)
+library(ISLR)
+library(MASS)
+library(nnet)
+```
+
+```{r}
+#| label: load data
+redwine <- read.csv("data/winequality-red.csv", sep = ";")
+whitewine <- read.csv("data/winequality-white.csv", sep = ";")
+redwine<-redwine%>%mutate(color="red")
+whitewine<-whitewine%>%mutate(color="white")
+wine<-redwine%>%full_join(whitewine)
+wine<- slice(wine, sample(1:n()))
+
+
+```
+
+## Introduction and Data
+
+### Introduction
+About 234 million hectoliters of wine were consumed in 2020, worldwide, with the US making
+up approximetly 14% of that consumption (Karlsson 2020). Since Wine composition and wine
+quality varies widely, it raises the question: what makes a good wine?
+\par
+To answer that question, we will analyze the wine quality dataset from Vinho Verde vinyard
+in Portogal, and more importantly try to narrow down our question to make it possible for it
+to be supported by evidence. Below is the introduction to our research:
+\par
+Project Goal: To identify variables that are important in explaining variation in the response. “Vinho Verde” is the kind of wine exclusively produced in the demarcated region of Vinho Verde in northwestern Portugal. The Vinho Verde wine has its own unique system of production and is only produced from the indigenous grape varieties of the region. Vinho Verde region is one of the largest and oldest wine regions in the world, and is home to thousands of producers, generating a wealth of economic activity and jobs, and strongly contributes to the development of Minho province and the country. The Vinho Verde wine also enjoys high reputation worldwide. It is recurrently awarded in national and international competitions. The goal of this dataset is to model wine quality based on physicochemical tests. We believe that this dataset can also be used to analyze the relationship between different chemical compositions and the ratings of wine quality. We believe that this dataset can also be used to analyze what chemical factors are attributable to the final rating of Vinho Verde wine. Our research may shed light on future research and development directions for improving the quality of Vinho Verde wine, which may also contribute to the competitiveness of Portuguese wine industry.
+\par
+Our goal is to produce a classification model that best explains how different chemical compositions of the Portuguese “Vinho Verde” wine affects the variation of the wine quality.
+
+### Data Introduction 
+
+The Wine Quality dataset was collected from Vinho Verde wine Samples, from the North
+of Portugal. The data was originally donated in 2009 by Professor Cortez. The specific
+mechanism of the collection of the data was lab work done on different wines to measure their
+chemical attributites (like acidity etc.). The quality of the wine however was obtained through
+the average rating of three wine experts. The dataset is divided into two: Red wine and
+White wine. Red Wine has 1599 observations, and white wine has 4898 observations (each
+observation being a specific wine). Information about the wine include but are not limited
+to:PH,Density,Acidity, and alcohol content.
+\par
+Each observation is a specific wine from the Vinho Verde region. Thus, there might be a
+little uncertainity in collecting the exact numbers for each numbers. However, since the Vinho
+Verde region is a vast region spreading 15500 hectareas of vineyards in far-north Portugal, this
+uncertainity shouldn’t be significant in our analysis or project. Thus, we will assume that the
+datas are independent and random
+```{r}
+glimpse(wine)
+```
+There are 6497 observations and 13 variables (14 if you include the new response variable added later).
+
+```{r}
+any(is.na(wine))
+```
+There are no NAs in our data, so we shouldn’t be concerned about missing data.
+
+```{r}
+
+
+```
+
+### Data Editing
+
+```{r}
+wine<-wine%>%
+  mutate(good_wine=if_else(quality >= 7,"1","0"))
+wine<-wine%>%
+  mutate(good_wine=as.factor(good_wine))
+wine<-wine%>%
+  mutate(good_wine_names=if_else(good_wine=="1","Good wine","Bad or subpar wine"))
+no1 <- colnames(wine)[1:11]
+colnames(wine)[1:11] = paste("c_", no1, sep = "")
+```
+
+
+### EDA
+
+
+
+
+## Methodology
+
+###Logistic Model
+
+#### Reduced Model
+```{r datasplit}
+set.seed(222)
+wine_split <- initial_split(wine, prop = 3/4)
+wine_train <- training(wine_split)
+wine_test <- training(wine_split)
+```
+
+```{r specmodel}
+wine_spec <- logistic_reg() %>%
+  set_engine("glm")
+```
+
+
+```{r}
+wine_rec1 <- recipe(
+  good_wine ~., data = wine_train) %>%
+  step_rm(good_wine_names,quality) %>%
+  step_center(all_numeric_predictors())%>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+```
+
+```{r}
+wine_wflow1 <- workflow() %>%
+  add_model(wine_spec) %>%
+  add_recipe(wine_rec1)
+```
+
+```{r}
+
+wine_fit1 <- wine_wflow1 %>%
+  fit(data = wine_train)
+kable(tidy(wine_fit1), digits = 3)
+```
+Should we remove Citric Acid, lets do a quick Anova test
+```{r}
+wine_rec2 <- recipe(
+  good_wine ~., data = wine_train) %>%
+  step_rm(good_wine_names,quality,c_citric.acid) %>%
+  step_center(all_numeric_predictors())%>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+wine_wflow2 <- workflow() %>%
+  add_model(wine_spec) %>%
+  add_recipe(wine_rec2)
+wine_fit2 <- wine_wflow2 %>%
+  fit(data = wine_train)
+```
+
+```{r}
+fit_engine1<-extract_fit_engine(wine_fit1)
+fit_engine2<-extract_fit_engine(wine_fit2)
+anova(fit_engine2, fit_engine1, test = "Chisq") %>%
+    kable(digits = 3)
+```
+
+We should remove cetric acid based on those results. (Insert Interruptation )
+
+### Full Model 
+
+```{r}
+wine_rec_full <- recipe(
+  good_wine ~., data = wine_train) %>%
+  step_rm(good_wine_names,quality,c_citric.acid) %>%
+  step_dummy(color)%>%
+  step_interact(terms = ~starts_with("c_"):starts_with("color")) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+```
+
+```{r}
+wine_flow_model <- workflow() %>%
+  add_model(wine_spec) %>%
+  add_recipe(wine_rec_full)
+```
+
+```{r}
+wine_fit_test <- wine_flow_model %>%
+  fit(data = wine_train)
+
+tidy(wine_fit_test,conf.int = T) %>% 
+  kable(digits = 3)
+
+
+````
+
+As we can see from some variables p values and confidence interval, we can drop some of those valuables if we were to conduct to a hypothesis test since their p value would exceed 0.05, meaning that we would not have enough to rejec the null hypothesis. (better wording later)
+
+
+```{r}
+wine_full_reduced <- recipe(
+  good_wine ~., data = wine_train) %>%
+  step_rm(good_wine_names,quality,c_citric.acid) %>%
+  step_dummy(color)%>%
+  step_interact(terms = ~starts_with("c_"):starts_with("color")) %>%
+  step_rm(c_sulphates_x_color_white,c_free.sulfur.dioxide_x_color_white,c_chlorides_x_color_white,
+          c_residual.sugar_x_color_white,c_volatile.acidity_x_color_white,c_sulphates_x_color_white,
+          c_fixed.acidity_x_color_white,c_pH)%>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+```
+
+```{r}
+wine_full_reduced_workflow<- workflow() %>%
+  add_model(wine_spec) %>%
+  add_recipe(wine_full_reduced)
+
+wine_fit_test <- wine_full_reduced_workflow %>%
+  fit(data = wine_train)
+
+tidy(wine_fit_test,conf.int = T) %>% 
+  kable(digits = 3)
+
+```
+
+#### Stepwise 
+
+```{r}
+AIC_fit<- logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(good_wine~.-c_citric.acid-quality-good_wine_names,
+  data = wine_train)
+AIC_fit<- repair_call(AIC_fit, data = wine_train)
+AIC_fit_engine<-AIC_fit %>% extract_fit_engine() 
+```
+
+```{r}
+best_AIC_model<-stepAIC(AIC_fit_engine,direction="forward",trace=FALSE)
+```
+
+
+```{r}
+best_AIC_model%>%tidy()
+```
+
+### Multnomial Regression 
+
+#### Data Editing for Regression
+
+
+
+
+```{r}
+full_fit1<- multinom_reg() %>%
+  set_engine("nnet") %>%
+  fit(as.factor(quality)~.-good_wine_names-good_wine,
+  data = wine_train)
+full_fit1<- repair_call(full_fit1, data = wine_train)
+tidy(full_fit1)
+```
+```{r}
+full_fit1_engine<-full_fit1 %>% extract_fit_engine() 
+newmodel<-stepAIC(full_fit1_engine,direction="both",trace=FALSE)
+```
+
+```{r}
+tidy(newmodel)
+```
+
+## Results
+
+```{r}
+fit2_aug <- augment(wine_fit2, new_data = wine_test)
+
+fit2_conf<-fit2_aug%>%
+  count(good_wine,.pred_class,.drop=FALSE)%>%
+    pivot_wider(names_from = .pred_class, values_from = n)
+fit2_conf
+
+```
+```{r}
+predicted <- predict(wine_fit2, wine_test)
+predicted<-predicted%>%mutate(.pred_class=as.numeric(.pred_class))
+optimal <- optimalCutoff(as.numeric(wine_test$good_wine), predicted)[1]
+
+mis1<-misClassError(as.numeric(wine_test$good_wine), predicted, threshold=optimal)
+accuracy <- mean(as.numeric(wine_test$good_wine)== as.numeric(predicted$.pred_class))
+```
+
+```{r}
+newmodel$AIC
+glance(full_fit1)$AIC
+training_pred <- predict(newmodel,wine_test)
+training_pred<-data_frame(training_pred)
+accuracy <- mean(wine_test$quality == training_pred$training_pred)
+
+```
