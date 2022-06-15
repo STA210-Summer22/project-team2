@@ -1,0 +1,260 @@
+---
+title: "Project-draft"
+output: html_document
+date: '2022-06-13'
+---
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(tidyverse)
+library(tidymodels)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(knitr)
+library(recipes)
+library(caret)
+library(InformationValue)
+library(ISLR)
+library(MASS)
+library(nnet)
+
+```
+
+```{r}
+#| label: load data
+redwine <- read.csv("data/winequality-red.csv", sep = ";")
+whitewine <- read.csv("data/winequality-white.csv", sep = ";")
+redwine<-redwine%>%mutate(color="red")
+whitewine<-whitewine%>%mutate(color="white")
+wine<-redwine%>%full_join(whitewine)
+wine<- slice(wine, sample(1:n()))
+```
+```{r}
+ggplot(data = wine, aes(x = fixed.acidity, y = quality, color = color)) +
+  geom_jitter()
+```
+
+```{r}
+wine<-wine%>%
+  mutate(good_wine=if_else(quality >= 7,"1","0"))
+wine<-wine%>%
+  mutate(good_wine_names=if_else(good_wine=="1","Good wine","Bad or subpar wine"))
+ggplot(wine,aes(x=good_wine))+
+  geom_bar()+
+  labs(title="Distribution of Good wine in data",
+       y="Count",
+       x="Good Wine"
+  )
+```
+```{r}
+no1 <- colnames(wine)[1:11]
+colnames(wine)[1:11] = paste("c_", no1, sep = "")
+```
+
+```{r datasplit}
+set.seed(222)
+wine_split <- initial_split(wine, prop = 3/4)
+wine_train <- training(wine_split)
+wine_test <- training(wine_split)
+```
+
+```{r specmodel}
+wine_spec <- logistic_reg() %>%
+  set_engine("glm")
+```
+
+## Logistic Model
+
+### Initial
+```{r}
+wine_rec1 <- recipe(
+  good_wine ~., data = wine_train) %>%
+  step_rm(good_wine_names) %>%
+  step_interact(terms = ~starts_with("c_"):color) %>%
+  step_rm(quality) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+```
+
+```{r}
+wine_wflow1 <- workflow() %>%
+  add_model(wine_spec) %>%
+  add_recipe(wine_rec1)
+```
+
+```{r}
+wine_fit1 <- wine_wflow1 %>%
+  fit(data = wine_train)
+kable(tidy(wine_fit1), digits = 3)
+```
+We'll remove citric.acid.
+
+### Full model
+```{r}
+wine_rec2 <- recipe(
+  good_wine ~., data = wine_train) %>%
+  step_rm(good_wine_names) %>%
+  step_interact(terms = ~starts_with("c_"):color) %>%
+  step_rm(quality) %>%
+  step_rm(c_free.sulfur.dioxide_x_colorwhite) %>%
+  step_rm(c_chlorides_x_colorwhite) %>%
+  step_rm(c_citric.acid_x_colorwhite) %>%
+  step_rm(c_residual.sugar_x_colorwhite) %>%
+  step_rm(c_volatile.acidity_x_colorwhite) %>%
+  step_rm(c_fixed.acidity_x_colorwhite) %>%
+  step_rm(c_free.sulfur.dioxide) %>%
+  step_rm(c_citric.acid) %>%
+  step_rm(c_pH) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+```
+
+```{r}
+wine_wflow2 <- workflow() %>%
+  add_model(wine_spec) %>%
+  add_recipe(wine_rec2)
+```
+
+```{r}
+wine_fit2 <- wine_wflow2 %>%
+  fit(data = wine_train)
+kable(tidy(wine_fit2), digits = 3)
+```
+
+$log~odds(good~wine) = 290.153 + 0.371*fixed~acidity - 3.217*volatile + 0.256* residual~sugar - 11.862*chlorides - 0.011*total.sulfur.dioxide - 304.879*density + 3.63*sulphates + 0.766*alcohol + 0.015*total.sulfur.dioxide x colorwhite - 265.692*density x colorwhite - 1.534*sulphates x colorwhite - 0.511*alcohol x colorwhite + 259.744*colorwhite$
+
+```{r}
+wine_fit_test <- wine_wflow2 %>%
+  fit(data = wine_test)
+
+tidy(wine_fit_test) %>% 
+  kable(digits = 3)
+```
+```{r}
+wine_test_pred2 <- predict(wine_fit2, wine_test, type = "prob") %>% 
+  bind_cols(wine_test) 
+wine_test_pred2
+```
+
+### Reduced Model (no interactive terms)
+```{r}
+wine_rec3 <- recipe(
+  good_wine ~., data = wine_train) %>%
+  step_rm(good_wine_names) %>%
+  step_rm(quality) %>%
+  step_rm(c_citric.acid) %>%
+  step_rm(c_total.sulfur.dioxide) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+```
+
+```{r}
+wine_wflow3 <- workflow() %>%
+  add_model(wine_spec) %>%
+  add_recipe(wine_rec3)
+```
+
+```{r}
+wine_fit3 <- wine_wflow3 %>%
+  fit(data = wine_train)
+kable(tidy(wine_fit3), digits = 3)
+```
+
+```{r}
+wine_test_pred3 <- predict(wine_fit3, wine_test, type = "prob") %>% 
+  bind_cols(wine_test) 
+wine_test_pred3
+```
+
+
+
+### Model selection
+```{r}
+wine_fit2_eg <- wine_fit2 %>% extract_fit_engine()
+wine_fit3_eg <- wine_fit3 %>% extract_fit_engine()
+```
+
+```{r}
+wine_test_pred2 %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
+  bind_rows(wine_test_pred3 %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
+  ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
+  geom_line()
+```
+
+```{r}
+wine_test_pred2 %>%
+  roc_auc(truth = as.factor(good_wine), .pred_0)
+
+wine_test_pred3 %>%
+  roc_auc(truth = as.factor(good_wine), .pred_0)
+```
+
+Based on the roc_auc, the full model performs slightly better than the reduced model.
+
+AIC
+```{r}
+glance(wine_fit2_eg)$AIC
+glance(wine_fit3_eg)$AIC
+```
+BIC
+```{r}
+glance(wine_fit2_eg)$BIC
+glance(wine_fit3_eg)$BIC
+```
+
+The full model has lower AIC and BIC
+
+```{r}
+anova(wine_fit2_eg, wine_fit3_eg)
+```
+Drop-in-Deviance Test
+```{r}
+pchisq(38.508, 4, lower.tail = FALSE)
+```
+The p-value is very small, smaller than the critical value of 0.05 under 95% CI. So we can reject the null hypothesis and conclude that there is enough evidence showing that there is at least 1 beta_j does not equal to 0.
+
+Conclusion: we'll use the full model.
+```{r}
+wine2<-wine%>%mutate(quality=factor(quality,levels=0:10))
+```
+```{r}
+set.seed(22)
+wine_split2 <- initial_split(wine2, prop = 3/4)
+wine_train <- training(wine_split2)
+wine_test <- testing(wine_split2)
+```
+
+```{r}
+full_fit1<- multinom_reg() %>%
+  set_engine("nnet") %>%
+  fit(quality~.,
+  data = wine_train)
+```
+```{r}
+full_fit2<- repair_call(full_fit2, data = wine_train)
+full_fit2_fixed<-full_fit2 %>% extract_fit_engine() 
+```
+```{r}
+newmodel<-stepAIC(full_fit2_fixed,direction="both")
+```
+
+```{r}
+full_fit2%>%tidy()
+newmodel%>%tidy()
+newmodel$AIC
+glance(full_fit1)$AIC
+```
+```{r}
+training_pred <- predict(full_fit2,wine_test)
+
+accuracy <- mean(training_pred$.pred_class == wine_test$quality)
+```
+```{r}
+training_pred$.pred_class<-newmodel%>%predict(wine_test)
+training_pred2<-training_pred%>%mutate(training_pred2=factor(.pred_class,levels=0:10))
+
+accuracy2 <- mean(training_pred2$training_pred2 == wine_test$quality)
+
+```

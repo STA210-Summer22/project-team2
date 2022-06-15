@@ -1,4 +1,4 @@
-# Data
+# data
 
 Place data file(s) in this folder.
 
@@ -6,19 +6,11 @@ Then, include metadata about your dataset including information on provenance, c
 
 The codebook for your data file(s) using the following format.
 
-## Wine Quality dataset
+## name of data file
 
 |variable         |description |
 |:----------------|:-----------|
-|Fixed.acidity     |Amount of fixed acids in wine|
-|volatile.acidity | The amount of acetic acid in wine |
-|citric.acid       | Amount of citric acid it wine |
-|Residual Sugar       |The amount of Sugar remaining after fermentation|
-|Chlorides          | The amount of salt in the wine |
-|free sulfur dioxide         |the free form of SO2 exists in equilibrium between molecular SO2 (as a dissolved gas) and bisulfite ion|
-|total.sulfur.dioxide|Amount of free and bound forms of S02  |
-|Density           |Density of the wine |
-|     PH      | Acidity of the Wine  |
-|  sulphates         | Measure of wine additive |
-|  Alcohol         | The percent alcohol content of the wine. |
-|  Quality         | Quality of the wine |
+|variable1        | Description of variable 1 |
+|variable2        | Description of variable 2 |
+|variable3        | Description of variable 3 |
+|...              | ... |

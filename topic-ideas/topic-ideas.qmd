@@ -72,6 +72,13 @@ glimpse(cancer_reg)
 
 # Project idea 3
 
+<<<<<<< HEAD
+::: callout-important
+Project idea 3 is optional. If you decide to submit only 2 ideas, please delete the section headings below and leave a note below stating so. If you decide to submit the 3rd idea, please delete this callout.
+:::
+
+=======
+>>>>>>> e8ad0308e1a6a8fbe5bdd60c46c5ed79e1d2fdbd
 ## Introduction and data
 
 The data was originally uploaded by the user Dgomonov on kaggle.com and sourced from the Airbnb website. The dataset includes listing activities and metrics for New York City, New York in 2019. The data file includes information on hosts, geographical availability, number of reviews, price, neighborhood, availability, and more. There are 48895 observations (each airbnb host) and 16 variables being measured in the data.

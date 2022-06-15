@@ -31,7 +31,7 @@ wine<- slice(wine, sample(1:n()))
 
 ## Introduction
 
-About 234 million hectoliters of wine were consumed in 2020, worldwide, with the US making up approximetly 14% of that consumption. Since Wine composition and wine quality varies widely, it raises the question: what makes a good wine?
+About 234 million hectoliters of wine were consumed in 2020, worldwide, with the US making up approximetly 14% of that consumption (Karlsson 2020). Since Wine composition and wine quality varies widely, it raises the question: what makes a good wine?
 
 \par
 
@@ -39,11 +39,10 @@ To answer that question, we will analyze the wine quality dataset from Vinho Ver
 
 \par
 
-Project Goal: To identify variables that are important in explaining variation in the response.
+Project Goal: To identify variables that are important in explaining variation in the response. "Vinho Verde" is the kind of wine exclusively produced in the demarcated region of Vinho Verde in northwestern Portugal. The Vinho Verde wine has its own unique system of production and is only produced from the indigenous grape varieties of the region. Vinho Verde region is one of the largest and oldest wine regions in the world, and is home to thousands of producers, generating a wealth of economic activity and jobs, and strongly contributes to the development of Minho province and the country. The Vinho Verde wine also enjoys high reputation worldwide. It is recurrently awarded in national and international competitions.\
+The goal of this dataset is to model wine quality based on physicochemical tests. We believe that this dataset can also be used to analyze the relationship between different chemical compositions and the ratings of wine quality. We believe that this dataset can also be used to analyze what chemical factors are attributable to the final rating of Vinho Verde wine. Our research may shed light on future research and development directions for improving the quality of Vinho Verde wine, which may also contribute to the competitiveness of Portuguese wine industry.
 
-We are interested in what factors contribute to the quality of Portuguese "Vinho Verde" wine. The goal of this dataset is to model wine quality based on physicochemical tests. We believe that this dataset can also be used to analyze the relationship between different chemical compositions and the ratings of wine quality. We believe this is important because by understanding what chemical compositions affect wine qualities, it may shed some light in future direction of improving/preserving wine quality.
-
-Out goal is to produce a classification model that best explains how different chemical compositions of the Portuguese "Vinho Verde" wine affects the variation of the wine quality. ...
+Out goal is to produce a classification model that best explains how different chemical compositions of the Portuguese "Vinho Verde" wine affects the variation of the wine quality.
 
 ## Data description
 
@@ -51,7 +50,7 @@ The Wine Quality dataset was collected from Vinho Verde wine Samples, from the N
 
 \par
 
-Each observation is a specific wine from Vinho Verde vinyard. Thus, there might be a little uncertainity in collecting the exact numbers for each numbers. This uncertainity shouldn't be significant in our analysis or project. Thus, we will assume that the values from the
+Each observation is a specific wine from the Vinho Verde region. Thus, there might be a little uncertainity in collecting the exact numbers for each numbers. However, since the Vinho Verde region is a vast region spreading 15500 hectareas of vineyards in far-north Portugal, this uncertainity shouldn't be significant in our analysis or project. Thus, we will assume that the datas are independent and random.
 
 ```{r}
 #| label: glimpse
@@ -177,4 +176,8 @@ For prediction, we will build two models for each outcome variable based on our 
 
 ## Data dictionary
 
-The data dictionary can be found [here](https://archive.ics.uci.edu/ml/datasets/wine+quality).
+The data dictionary can be found [here](http://rpubs.com/Abdel1412/912444)
+
+## Citation
+
+(Will make a citation page for the project later on) Link for [article](https://www.forbes.com/sites/karlsson/2021/12/31/wine-consumption-in-the-world-2020-in-decline-a-detailed-look/#:~:text=The%20world's%20wine%20consumption%20in,the%20lowest%20level%20since%202002.)
