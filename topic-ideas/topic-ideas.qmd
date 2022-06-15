@@ -19,12 +19,17 @@ Can Wine composition be used to predict it's quality?
 \par
 
 To answer this question, we would be looking at the input values from the physicochemical tests(acidity, Ph..etc) to determine if there is a relationship between those values and wine quality. If there is a relationship, then we would looking to model this relationship through linear regression, removing some of the corrlinear predictors.
+
 \par
+
 Another research question we could explore is: Can chemical composition of wine be used to predict it's color? (white or red)
+
 \par
+
 To answer this question, we would be doing the same as above, however, with a focus on logistical regression. Thus, we would be looking at which qualities red and white wine share, and which they don't. Then using those to predict if a wine is red or white. Moreover, if there is a discrepancy in quality, then quality can be also used as a predictor.
 
 ## Glimpse of data
+
 ```{r}
 #| label: data-1
 #| message: false
@@ -41,11 +46,15 @@ glimpse(white_wine)
 # Project idea 2
 
 ## Introduction and data
+
 The dataset was originally posted by Noah Rippner on data.world.The dataset was collected through aggregation of a number of sources like census.gov or cancer.gov. The dataset has 3047 observations, with each observation representing a US county. Some respective information collected include but not limited to:median age,average household size, average deaths per year,birthrate, and cancer deathrate.
 
 ## Research question
+
 A research question we want to explore is: Can a county's characteristics (racial composition, gender compositation. etc) be used to predict it's cancer deathrate? If so, What model is best for predicating?
+
 \par
+
 To answer this question, we would be looking at many factors from employment rate to racial composition of a county. Using those factor, and many others, we will be fitting models to determine which model is the parsimonious model.
 
 ## Glimpse of data
@@ -68,10 +77,13 @@ glimpse(cancer_reg)
 The data was originally uploaded by the user Dgomonov on kaggle.com and sourced from the Airbnb website. The dataset includes listing activities and metrics for New York City, New York in 2019. The data file includes information on hosts, geographical availability, number of reviews, price, neighborhood, availability, and more. There are 48895 observations (each airbnb host) and 16 variables being measured in the data.
 
 ## Research question
- Which features or predictions (locations, reviews, cost, etc.) have the greatest influence on airbnb reservations?
+
+Which features or predictions (locations, reviews, cost, etc.) have the greatest influence on airbnb reservations?
+
 \par
- To answer this question, we would use multiple linear regression and a variety of methods to determine which factors or variables are integral in increasing the likelihood that a customer books an Airbnb and fit the "best" model.
-    
+
+To answer this question, we would use multiple linear regression and a variety of methods to determine which factors or variables are integral in increasing the likelihood that a customer books an Airbnb and fit the "best" model.
+
 ## Glimpse of data
 
 ```{r}
