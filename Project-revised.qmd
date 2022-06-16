@@ -481,6 +481,7 @@ wine_AIC_rs <- wine_wflow_reduce %>%
 metrics_full <- collect_metrics(wine_full_rs, summarize = FALSE) %>% mutate(model = "Model 1 - Full")
 metrics_reduce <- collect_metrics(wine_AIC_rs, summarize = FALSE) %>% mutate(model = "Model 2 - Reduce")
 ```
+
 Graph for metrics
 ```{r}
 metrics <- bind_rows(metrics_full, metrics_reduce) %>%
@@ -521,52 +522,44 @@ linearity
 emplogitplot1(good_wine ~ c_fixed.acidity, 
               data = wine, 
               ngroups = 20)
-```
-```{r}
+
 emplogitplot1(good_wine ~ c_volatile.acidity, 
               data = wine, 
               ngroups = 20)
-```
-```{r}
+
 emplogitplot1(good_wine ~ c_free.sulfur.dioxide, 
               data = wine, 
               ngroups = 30)
-```
-```{r}
+
 emplogitplot1(good_wine ~ c_residual.sugar, 
               data = wine, 
               ngroups = 30)
-```
-```{r}
+
 emplogitplot1(good_wine ~ c_chlorides, 
               data = wine, 
               ngroups = 30)
-```
-```{r}
+
 emplogitplot1(good_wine ~ c_total.sulfur.dioxide, 
               data = wine, 
               ngroups = 30)
-```
-```{r}
+
 emplogitplot1(good_wine ~ c_density, 
               data = wine, 
               ngroups = 30)
-```
-```{r}
+
 emplogitplot1(good_wine ~ c_pH + color, 
               data = wine, 
               ngroups = 30)
-```
-```{r}
+
 emplogitplot1(good_wine ~ c_sulphates, 
               data = wine, 
               ngroups = 30)
-```
-```{r}
+
 emplogitplot1(good_wine ~ c_alcohol + color, 
               data = wine, 
               ngroups = 20)
 ```
+
 Not every variables satisfy the linearity condition. (This can be mentioned in the limitation part of the final report.)
 
 Independence
