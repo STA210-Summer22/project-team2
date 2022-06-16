@@ -41,9 +41,6 @@ redwine <- redwine %>% mutate(color="red")
 whitewine <- whitewine %>% mutate(color="white")
 wine <- redwine %>% full_join(whitewine)
 wine <- slice(wine, sample(1:n()))
-
-ggplot(data = wine, aes(x = fixed.acidity, y = quality, color = color)) +
-  geom_jitter()
 ```
 
 ### Introduction and Data
@@ -506,8 +503,7 @@ wine_test_pred2 %>%
   roc_auc(truth = as.factor(good_wine), .pred_0)
 ```
 
-Based on the roc_auc, the full model performs slightly better than the
-reduced model.
+Based on the roc_auc, the full model performs slightly better than the reduced model.
 
 ```{r aic}
 glance(wine_fit1_eg)$AIC
@@ -525,7 +521,10 @@ The full model has lower AIC and BIC.
 anova(wine_fit1_eg, wine_fit2_eg)
 ```
 
-Drop-in-Deviance Test
+Drop-in-Deviance Test:
+
+$H_0$: the $\beta_j$ of all the additional interactive terms equal to 0.
+$H_1$: at least one additional interactive term have $\beta_j$ that does not equal 0.
 
 ```{r}
 pchisq(38.508, 4, lower.tail = FALSE)
@@ -534,10 +533,10 @@ pchisq(38.508, 4, lower.tail = FALSE)
 The p-value is very small, smaller than the critical value of 0.05 under
 95% CI. So we can reject the null hypothesis and conclude that there is
 enough evidence showing that there is at least 1 beta_j does not equal
-to 0.
+to 0. The interactive terms have significant effects so we'll choose the full model.
+-------------------------
 
-Conclusion: we'll use the full model.
-
+Multinominal Regression:
 ```{r}
 wine2<-wine%>%mutate(quality=factor(quality,levels=0:10))
 ```
@@ -558,12 +557,12 @@ full_fit1<- multinom_reg() %>%
 ```
 
 ```{r}
-full_fit1<- repair_call(full_fit1, data = wine_train)
-full_fit1_fixed<-full_fit1 %>% extract_fit_engine() 
+full_fit1 <- repair_call(full_fit1, data = wine_train)
+full_fit1_eg <- full_fit1 %>% extract_fit_engine() 
 ```
 
 ```{r}
-newmodel<-stepAIC(full_fit1_fixed,direction="both")
+newmodel <- stepAIC(full_fit1_eg, direction="both")
 ```
 
 ```{r}
@@ -575,7 +574,6 @@ glance(full_fit1)$AIC
 
 ```{r}
 training_pred <- predict(full_fit1,wine_test)
-
 accuracy <- mean(training_pred$.pred_class == wine_test$quality)
 ```
 
@@ -584,37 +582,37 @@ training_pred$.pred_class<-newmodel%>%predict(wine_test)
 training_pred2<-training_pred%>%mutate(training_pred2=factor(.pred_class,levels=0:10))
 
 accuracy2 <- mean(training_pred2$training_pred2 == wine_test$quality)
-
 ```
 
 ```{r confint}
-# I'm getting errors for everything i've commented below and for the rest of the doc
-# ? 
-#fit2_aug <- augment(wine_fit2, new_data = wine_test)
+full_fit1_aug <- augment(full_fit1, new_data = wine_test)
+full_fit1_aug
+```
+```{r}
+full_fit1_conf<-full_fit1_aug %>%
+  count(good_wine, .pred_class, .drop=FALSE) %>%
+  pivot_wider(names_from = .pred_class, values_from = n)
 
-#fit2_conf<-fit2_aug %>%
-  #count(good_wine, .pred_class, .drop=FALSE) %>%
-  #pivot_wider(names_from = .pred_class, values_from = n)
-
-#fit2_conf
+full_fit1_conf
 ```
 
 ```{r}
-# predicted <- predict(wine_fit2, wine_test)
-# predicted <- predicted %>%
-  # mutate(.pred_class = as.numeric(.pred_class))
+#getting errors
+#full_fit1_pred <- predict(full_fit1_aug, wine_test)
+#full_fit1_pred <- full_fit1_pred %>%
+  #mutate(.pred_class = as.numeric(.pred_class))
 
-# optimal <- optimalCutoff(as.numeric(wine_test$good_wine), predicted)[1]
+#optimal <- optimalCutoff(as.numeric(wine_test$good_wine), full_fit1_pred)[1]
 
-# mis1 <- misClassError(as.numeric(wine_test$good_wine), predicted, threshold = optimal)
-# accuracy <- mean(as.numeric(wine_test$good_wine) == as.numeric(predicted$.pred_class))
+#full_fit1_mis <- misClassError(as.numeric(wine_test$good_wine), full_fit1_pred, threshold = optimal)
+#accuracy <- mean(as.numeric(wine_test$good_wine) == as.numeric(full_fit1_pred$.pred_class))
 ```
 
 ```{r}
-# newmodel$AIC
-# glance(full_fit1)$AIC
+#newmodel$AIC
+#glance(full_fit1)$AIC
 
-# training_pred <- predict(newmodel, wine_test)
-# training_pred <-data_frame(training_pred)
-# accuracy <- mean(wine_test$quality == training_pred$training_pred)
+#training_pred <- predict(newmodel, wine_test)
+#training_pred <-data_frame(training_pred)
+#accuracy <- mean(wine_test$quality == training_pred$training_pred)
 ```
