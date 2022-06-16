@@ -448,6 +448,9 @@ best_AIC_pred %>%
 ### Results
 
 -   model interpretation
+  - full model
+  - best AIC model
+  - AIC BIC ROC
 -   model selection: do not include the interactive terms due to parsimonious. because the ROC does not improve much. 
 
 ### Discussion & Conclusion
@@ -459,4 +462,4 @@ best_AIC_pred %>%
 ### Reference
 
 -   dataset
--   ariticles
+-   articles
