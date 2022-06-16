@@ -9,6 +9,9 @@ editor_options:
   markdown: 
     wrap: 72
 ---
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
 
 ### Setup
 
@@ -518,7 +521,7 @@ glance(wine_fit2_eg)$BIC
 The full model has lower AIC and BIC.
 
 ```{r}
-anova(wine_fit1_eg, wine_fit2_eg)
+anova(wine_fit1_eg, wine_fit2_eg)%>%tidy()
 ```
 
 Drop-in-Deviance Test:
@@ -536,7 +539,8 @@ enough evidence showing that there is at least 1 beta_j does not equal
 to 0. The interactive terms have significant effects so we'll choose the full model.
 -------------------------
 
-Multinominal Regression:
+#### Multinominal Regression
+
 ```{r}
 wine2<-wine%>%mutate(quality=factor(quality,levels=0:10))
 ```
@@ -562,7 +566,7 @@ full_fit1_eg <- full_fit1 %>% extract_fit_engine()
 ```
 
 ```{r}
-newmodel <- stepAIC(full_fit1_eg, direction="both")
+newmodel <- stepAIC(full_fit1_eg, direction="both",trace=FALSE)
 ```
 
 ```{r}
@@ -582,6 +586,8 @@ training_pred$.pred_class<-newmodel%>%predict(wine_test)
 training_pred2<-training_pred%>%mutate(training_pred2=factor(.pred_class,levels=0:10))
 
 accuracy2 <- mean(training_pred2$training_pred2 == wine_test$quality)
+accuracy
+accuracy2
 ```
 
 ```{r confint}
@@ -590,29 +596,8 @@ full_fit1_aug
 ```
 ```{r}
 full_fit1_conf<-full_fit1_aug %>%
-  count(good_wine, .pred_class, .drop=FALSE) %>%
+  count(quality, .pred_class, .drop=FALSE) %>%
   pivot_wider(names_from = .pred_class, values_from = n)
 
 full_fit1_conf
-```
-
-```{r}
-#getting errors
-#full_fit1_pred <- predict(full_fit1_aug, wine_test)
-#full_fit1_pred <- full_fit1_pred %>%
-  #mutate(.pred_class = as.numeric(.pred_class))
-
-#optimal <- optimalCutoff(as.numeric(wine_test$good_wine), full_fit1_pred)[1]
-
-#full_fit1_mis <- misClassError(as.numeric(wine_test$good_wine), full_fit1_pred, threshold = optimal)
-#accuracy <- mean(as.numeric(wine_test$good_wine) == as.numeric(full_fit1_pred$.pred_class))
-```
-
-```{r}
-#newmodel$AIC
-#glance(full_fit1)$AIC
-
-#training_pred <- predict(newmodel, wine_test)
-#training_pred <-data_frame(training_pred)
-#accuracy <- mean(wine_test$quality == training_pred$training_pred)
 ```
