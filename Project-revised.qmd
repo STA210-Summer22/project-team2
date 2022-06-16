@@ -363,19 +363,20 @@ $log~odds(good~wine) = 290.153 + 0.371*fixed~acidity - 3.217*volatile + 0.256* r
 wine_rec_full <- recipe(
   good_wine ~., data = wine_train) %>%
   step_rm(good_wine_names) %>%
-  step_interact(terms = ~starts_with("c_"):color) %>%
   step_rm(quality) %>%
-  step_rm(c_free.sulfur.dioxide_x_colorwhite) %>%
-  step_rm(c_chlorides_x_colorwhite) %>%
-  step_rm(c_citric.acid_x_colorwhite) %>%
-  step_rm(c_residual.sugar_x_colorwhite) %>%
-  step_rm(c_volatile.acidity_x_colorwhite) %>%
-  step_rm(c_fixed.acidity_x_colorwhite) %>%
+  step_rm(c_pH) %>%
   step_rm(c_free.sulfur.dioxide) %>%
   step_rm(c_citric.acid) %>%
-  step_rm(c_pH) %>%
   step_dummy(all_nominal_predictors()) %>%
+  step_interact(terms = ~starts_with("c_"):starts_with("color")) %>%
+  step_rm(c_chlorides_x_color_white) %>%
+  step_rm(c_residual.sugar_x_color_white) %>%
+  step_rm(c_volatile.acidity_x_color_white) %>%
+  step_rm(c_fixed.acidity_x_color_white) %>%
   step_zv(all_predictors())
+prep(wine_rec_full)%>%bake(wine_train)
+
+
 ```
 
 ```{r}
@@ -402,12 +403,11 @@ tidy(wine_full_test) %>%
 ```
 
 ```{r}
-wine_full_test_pred <- predict(wine_fit_full, wine_test, type = "prob") %>% 
-  bind_cols(wine_test) 
-wine_full_test_pred
+wine_full_fit <- predict(wine_fit_full, wine_train, type = "prob") %>% bind_cols(wine_train)
+wine_full_fit
 ```
 
-#### Stepwise
+#### Stepwise AIC Model
 - We need to include reasons here. Why choose stepwise AIC model as the reduced model?
 
 ```{r}
@@ -425,15 +425,14 @@ tidy(best_AIC_model)
 ```
 
 ```{r}
-best_AIC_pred <- predict(best_AIC_model, wine_test) %>% 
-  bind_cols(wine_test)
-best_AIC_pred <- best_AIC_pred %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
+best_AIC_fit <- predict(best_AIC_model, wine_train) %>% bind_cols(wine_train)
+best_AIC_fit <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
 ```
 
 #### Model Selection
 ```{r}
-wine_full_test_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
-  bind_rows(best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
+wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
+  bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
   geom_line()
 ```
@@ -445,6 +444,76 @@ wine_full_test_pred %>%
 best_AIC_pred %>%
   roc_auc(truth = as.factor(good_wine), .pred_0)
 ```
+
+#### Cross Validation
+```{r}
+best_AIC_rec <- recipe(
+  good_wine ~ c_fixed.acidity + c_volatile.acidity + 
+    c_citric.acid + c_residual.sugar + c_chlorides + c_free.sulfur.dioxide + 
+    c_total.sulfur.dioxide + c_density + c_pH + c_sulphates + 
+    c_alcohol + quality + color + good_wine_names, data = wine_train) %>%
+  step_rm(c_citric.acid) %>%
+  step_rm(quality) %>%
+  step_rm(good_wine_names) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+
+wine_wflow_reduce <- workflow() %>%
+  add_model(wine_spec) %>%
+  add_recipe(best_AIC_rec)
+```
+
+```{r}
+set.seed(345)
+folds <- vfold_cv(wine_train, v = 10)
+```
+
+```{r}
+wine_full_rs <- wine_wflow_full %>%
+  fit_resamples(folds)
+
+wine_AIC_rs <- wine_wflow_reduce %>%
+  fit_resamples(folds)
+```
+
+```{r}
+metrics_full <- collect_metrics(wine_full_rs, summarize = FALSE) %>% mutate(model = "Model 1 - Full")
+metrics_reduce <- collect_metrics(wine_AIC_rs, summarize = FALSE) %>% mutate(model = "Model 2 - Reduce")
+```
+Graph for metrics
+```{r}
+metrics <- bind_rows(metrics_full, metrics_reduce) %>%
+arrange(.metric)
+ggplot(metrics %>% filter(.metric == "accuracy"),
+aes(x = id, y = .estimate,
+group = model, color = model)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Accuracy") +
+  theme_bw()
+```
+```{r}
+ggplot(metrics %>% filter(.metric == "roc_auc"),
+
+aes(x = id, y = .estimate,
+    group = model, color = model)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "ROC-AUC") +
+  theme_bw()
+```
+The two models have similar accuracy and the roc-auc for 10 folds, so due to the principles of parsimonious, we prefer the reduce one. 
+
+The AOC curve of the reduce model's prediction:
+```{r}
+best_AIC_pred <- predict(best_AIC_model, wine_test) %>% bind_cols(wine_test)
+best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
+best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
+  ggplot(aes(x = 1 - specificity, y = sensitivity)) +
+  geom_line()
+```
+
+#### Conditions
 
 ### Results
 
