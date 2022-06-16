@@ -326,11 +326,9 @@ wine_spec <- logistic_reg() %>% set_engine("glm")
 ```
 
 We plan to compare a full model and a reduced model. For the full model,
-we decide to include interactive terms, and there will be no interactive
-terms for the reduced model. Initial speculation of the model. We'll
-include all the predictor variables and include all the interactive
-terms with colors at first.
+we decide to include interactive terms. For the reduced model, we adopt the stepwise AIC test to get a best AIC model. 
 
+Initial speculation of the model. We'll include all the predictor variables and include all the interactive terms with colors at first.
 ```{r}
 wine_rec_initial <- recipe(
   good_wine ~., data = wine_train) %>%
@@ -409,48 +407,32 @@ wine_full_test_pred <- predict(wine_fit_full, wine_test, type = "prob") %>%
 wine_full_test_pred
 ```
 
-#### Logistic Reduced Model
-
+#### Stepwise
 ```{r}
-wine_rec_reduced <- recipe(
-  good_wine ~., data = wine_train) %>%
-  step_rm(good_wine_names) %>%
-  step_rm(quality) %>%
-  step_rm(c_citric.acid) %>%
-  step_rm(c_total.sulfur.dioxide) %>%
-  step_dummy(all_nominal_predictors()) %>%
-  step_zv(all_predictors())
+AIC_fit <- logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(good_wine~.-c_citric.acid-quality-good_wine_names, data = wine_train)
+
+AIC_fit <- repair_call(AIC_fit, data = wine_train)
+AIC_fit_engine <- AIC_fit %>% extract_fit_engine() 
 ```
 
 ```{r}
-wine_wflow_reduced <- workflow() %>%
-  add_model(wine_spec) %>%
-  add_recipe(wine_rec_reduced)
+best_AIC_model <- stepAIC(AIC_fit_engine, direction="forward", trace=FALSE)
+tidy(best_AIC_model)
 ```
 
 ```{r}
-wine_fit_reduced <- wine_wflow_reduced %>%
-  fit(data = wine_train)
-tidy(wine_fit_reduced) %>% 
-  kable(digits = 3)
+best_AIC_pred <- predict(best_AIC_model, wine_test) %>% 
+  bind_cols(wine_test)
+best_AIC_pred <- best_AIC_pred %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
+best_AIC_pred
 ```
-
-```{r}
-wine_reduc_test_pred <- predict(wine_fit_reduced, wine_test, type = "prob") %>% 
-  bind_cols(wine_test) 
-wine_reduc_test_pred
-```
-
-#### Logistic Model Selection
-
-```{r}
-wine_full_eg <- wine_fit_full %>% extract_fit_engine()
-wine_reduced_eg <- wine_fit_reduced %>% extract_fit_engine()
-```
+#### Model Selection
 
 ```{r}
 wine_full_test_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
-  bind_rows(wine_reduc_test_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
+  bind_rows(best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
   geom_line()
 ```
@@ -459,54 +441,14 @@ wine_full_test_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mut
 wine_full_test_pred %>%
   roc_auc(truth = as.factor(good_wine), .pred_0)
 
-wine_reduc_pred %>%
+best_AIC_pred %>%
   roc_auc(truth = as.factor(good_wine), .pred_0)
 ```
-
-Based on the roc_auc, the full model performs slightly better than the
-reduced model.
-
-AIC
-
-```{r}
-glance(wine_full_eg)$AIC
-glance(wine_reduced_eg)$AIC
-```
-
-BIC
-
-```{r}
-glance(wine_full_eg)$BIC
-glance(wine_reduced_eg)$BIC
-```
-
-The full model has lower AIC and BIC
-
-```{r}
-anova(wine_full_eg, wine_reduced_eg)
-```
-
-Drop-in-Deviance Test:
-
-$H_0$: the $\beta_j$ of all the additional interactive terms equal to 0.
-
-$H_1$: at least one additional interactive term have $\beta_j$ that does
-not equal 0.
-
-```{r}
-pchisq(53.133, 4, lower.tail = FALSE)
-```
-
-The p-value is very small, smaller than the critical value of 0.05 under
-95% CI. So we can reject the null hypothesis and conclude that there is
-enough evidence showing that there is at least 1 beta_j does not equal
-to 0. The interactive terms have significant effects so we'll choose the
-full model.
 
 ### Results
 
 -   model interpretation
--   model selection
+-   model selection: do not include the interactive terms due to parsimonious. because the ROC does not improve much. 
 
 ### Discussion & Conclusion
 
