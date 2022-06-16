@@ -408,6 +408,8 @@ wine_full_test_pred
 ```
 
 #### Stepwise
+- We need to include reasons here. Why choose stepwise AIC model as the reduced model?
+
 ```{r}
 AIC_fit <- logistic_reg() %>%
   set_engine("glm") %>%
@@ -426,10 +428,9 @@ tidy(best_AIC_model)
 best_AIC_pred <- predict(best_AIC_model, wine_test) %>% 
   bind_cols(wine_test)
 best_AIC_pred <- best_AIC_pred %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
-best_AIC_pred
 ```
-#### Model Selection
 
+#### Model Selection
 ```{r}
 wine_full_test_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
   bind_rows(best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
