@@ -310,13 +310,13 @@ wine_full_fit <- predict(wine_fit_full, wine_train, type = "prob") %>% bind_cols
 
 #### Model Selection
 
-Compare two ROC curves.
 ```{r, echo=FALSE, fig.width=3, fig.height=2}
 wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
   bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
   geom_line()
 ```
+
 The two ROC curves are very close, suggesting that the two models' performances are similar. 
 
 ```{r, echo=FALSE}
@@ -336,7 +336,6 @@ kable(twoaoc, digits = 3)
 
 #### Cross Validation
 
-To perform the cross validation, we split the training data into 10 folds. 
 ```{r, echo=FALSE}
 best_AIC_rec <- recipe(
   good_wine ~ c_fixed.acidity + c_volatile.acidity + 
@@ -385,7 +384,7 @@ aoc_p <- ggplot(metrics %>% filter(.metric == "roc_auc"), aes(x = id, y = .estim
 plot_grid(acc_p, aoc_p, nrow = 2)
 ```
 
-The two models have similar accuracy and the roc-auc for 10 folds, so due to the principles of parsimonious, we prefer the reduce one. 
+To perform the cross validation, we split the training data into 10 folds. The two models have similar accuracy and the roc-auc for 10 folds, so due to the principles of parsimonious, we prefer the reduce one. 
 
 #### Check Conditions
 
