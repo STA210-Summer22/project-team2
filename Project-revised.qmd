@@ -1,7 +1,7 @@
 ---
 title: "project-revised"
 subtitle: "STA 210 - Summer 2022"
-author: "Team 2 - Alicia Gong, Ashley Chen, Abdel Shehata, Claire Tam"
+author: "Team 2 - Alicia Gong, Ashley Chen, Abdel Shehata, Claire Tan"
 date: "6-16-2022"
 format: pdf
 editor: visual
