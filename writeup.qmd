@@ -246,10 +246,12 @@ AIC_fit_engine <- AIC_fit %>% extract_fit_engine()
 ```
 
 #### Model output
+
 ```{r, echo=FALSE}
 best_AIC_model <- stepAIC(AIC_fit_engine, direction="forward", trace=FALSE)
 kable(tidy(best_AIC_model), digits = 3)
 ```
+$logodds(good~wine) = 399.637 + 0.452*fixed~acidity - 3.873*volatile~acidity + 0.212 * residual~sugar - 8.125*chlorides + 0.014*free.sulfur.dioxide - 0.004*total.sulfur.dioxide - 420.73*density + 2.663*pH + 2.605*sulphates + 0.48*alcohol - 0.936*colorwhite$
 
 ```{r, include=FALSE}
 best_AIC_fit <- predict(best_AIC_model, wine_train) %>% bind_cols(wine_train)
@@ -281,8 +283,6 @@ wine_rec_full <- recipe(
   good_wine ~., data = wine_train) %>%
   step_rm(good_wine_names) %>%
   step_rm(quality) %>%
-  step_rm(c_pH) %>%
-  step_rm(c_free.sulfur.dioxide) %>%
   step_rm(c_citric.acid) %>%
   step_dummy(all_nominal_predictors()) %>%
   step_interact(terms = ~starts_with("c_"):starts_with("color")) %>%
@@ -302,6 +302,7 @@ wine_fit_full <- wine_wflow_full %>%
   fit(data = wine_train)
 kable(tidy(wine_fit_full), digits = 3)
 ```
+$logodds(good~wine) = 385.310 + 0.401*fixed~acidity - 3.865*volatile~acidity + 0.256 * residual~sugar - 10.221*chlorides + 0.017 * free.sulfur.dioxide - 0.021*total.sulfur.dioxide - 375.495*density + 0.996*pH + 4.272*sulphates + 0.634*alcohol + 150.216*colorwhite - 0.004*free.sulfur.dioxide x colorwhite + 0.02*total.sulfur.dioxide x colorwhite - 154.703*density x colorwhite + 1.946*pH x colorwhite - 2.219*sulphates x colorwhite - 0.316*alcohol x colorwhite$
 
 ```{r, echo=FALSE}
 wine_full_test <- wine_wflow_full %>%
