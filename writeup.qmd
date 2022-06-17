@@ -105,6 +105,8 @@ spreading 15500 hectares of vineyards in far-north Portugal, this
 uncertainty shouldn't be significant in our analysis or project. Thus,
 we will assume that the data are independent and random
 
+#### Exploratory Data Analysis
+
 ```{r datawrangling, echo=FALSE}
 wine <- wine %>%
   mutate(good_wine = if_else(quality >= 7,"1","0"))
@@ -116,8 +118,6 @@ wine <- wine %>%
 no1 <- colnames(wine)[1:11]
 colnames(wine)[1:11] = paste("c_", no1, sep = "")
 ```
-
-#### Exploratory Data Analysis
 
 ```{r distributions, echo=FALSE, message=FALSE, fig.align = "center"}
 p1  <- ggplot(data = wine, aes(x = quality) ) + 
@@ -178,7 +178,7 @@ p12 <- ggplot(data = wine, aes(x = c_alcohol) ) +
 plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ncol = 3, nrow = 4)
 ```
 
-```{r, echo=FALSE, fig.height=4, fig.width=8, fig.align='center'}
+```{r, echo=FALSE, fig.height=5, fig.width=10, fig.align='center'}
 a1 <- ggplot(wine, aes(y = c_alcohol, x = as.factor(good_wine), color = color)) + 
   geom_boxplot() + 
   labs(x = "good wine", y = "alcohol")
@@ -263,7 +263,7 @@ best_AIC_model <- stepAIC(AIC_fit_engine, direction="forward", trace=FALSE)
 kable(tidy(best_AIC_model), digits = 3)
 ```
 
-$logodds(good~wine) = 399.637 + 0.452*fixed~acidity - 3.873*volatile~acidity + 0.212 * residual~sugar - 8.125*chlorides + 0.014*free.sulfur.dioxide - 0.004*total.sulfur.dioxide - 420.73*density + 2.663*pH + 2.605*sulphates + 0.48*alcohol - 0.936*colorwhite$
+$logodds(good~wine) = 399.637 + 0.452 \times fixed~acidity - 3.873 \times volatile~acidity + 0.212 \times residual~sugar - 8.125 \times chlorides + 0.014 \times free.sulfur.dioxide - 0.004 \times total.sulfur.dioxide - 420.73 \times density + 2.663 \times pH + 2.605 \times sulphates + 0.48 \times alcohol - 0.936 \times colorwhite$
 
 ```{r, include=FALSE}
 best_AIC_fit <- predict(best_AIC_model, wine_train) %>% bind_cols(wine_train)
@@ -284,10 +284,10 @@ best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
 
 ### Model Evaluation
 
-#### Logistic Model
+#### Full Model
 
-We compare the best AIC model with a logistic model with interactive
-terms.
+We compare the best AIC model with another logistic model with interactive
+terms. We'll call the best AIC model as the reduced model, and the logistic model with interactive terms as the full model. 
 
 ```{r, echo=FALSE}
 wine_spec <- logistic_reg() %>% set_engine("glm")
@@ -318,7 +318,7 @@ wine_fit_full <- wine_wflow_full %>%
 kable(tidy(wine_fit_full), digits = 3)
 ```
 
-$logodds(good~wine) = 385.310 + 0.401*fixed~acidity - 3.865*volatile~acidity + 0.256 * residual~sugar - 10.221*chlorides + 0.017 * free.sulfur.dioxide - 0.021*total.sulfur.dioxide - 375.495*density + 0.996*pH + 4.272*sulphates + 0.634*alcohol + 150.216*colorwhite - 0.004*free.sulfur.dioxide x colorwhite + 0.02*total.sulfur.dioxide x colorwhite - 154.703*density x colorwhite + 1.946*pH x colorwhite - 2.219*sulphates x colorwhite - 0.316*alcohol x colorwhite$
+$logodds(good~wine) = 385.310 + 0.401 \times fixed~acidity - 3.865 \times volatile~acidity + 0.256 \times residual~sugar - 10.221 \times chlorides + 0.017 \times free.sulfur.dioxide - 0.021 \times total.sulfur.dioxide - 375.495 \times density + 0.996 \times pH + 4.272 \times sulphates + 0.634 \times alcohol + 150.216 \times colorwhite - 0.004 \times free.sulfur.dioxide : colorwhite + 0.02 \times total.sulfur.dioxide:colorwhite - 154.703 \times density:colorwhite + 1.946 \times pH:colorwhite - 2.219 \times sulphates:colorwhite - 0.316 \times alcohol:colorwhite$
 
 ```{r, echo=FALSE}
 wine_full_test <- wine_wflow_full %>%
@@ -342,7 +342,7 @@ performances are similar.
 ```{r, echo=FALSE}
 aoc_logistic <- wine_full_fit %>% 
   roc_auc(truth = as.factor(good_wine), .pred_0) %>%
-  mutate(model = "Logistic Model")
+  mutate(model = "Full Model")
 
 aoc_AIC <- best_AIC_fit %>% 
   roc_auc(truth = as.factor(good_wine), .pred_0) %>%
@@ -355,6 +355,11 @@ kable(twoaoc, digits = 3)
 ```
 
 #### Cross Validation
+
+To perform the cross validation, we split the training data into 10
+folds. The two models have similar accuracy and the roc-auc for 10
+folds, so due to the principles of parsimonious, we prefer the reduce
+one.
 
 ```{r, echo=FALSE}
 best_AIC_rec <- recipe(
@@ -403,11 +408,6 @@ aoc_p <- ggplot(metrics %>% filter(.metric == "roc_auc"), aes(x = id, y = .estim
 
 plot_grid(acc_p, aoc_p, nrow = 2)
 ```
-
-To perform the cross validation, we split the training data into 10
-folds. The two models have similar accuracy and the roc-auc for 10
-folds, so due to the principles of parsimonious, we prefer the reduce
-one.
 
 #### Check Conditions
 
