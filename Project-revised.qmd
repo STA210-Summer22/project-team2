@@ -70,7 +70,7 @@ and is only produced from the indigenous grape varieties of the region.
 Vinho Verde region is one of the largest and oldest wine regions in the
 world, and is home to thousands of producers, generating a wealth of
 economic activity and jobs, and strongly contributes to the development
-of Minho province and the country. The Vinho Verde wine also enjoys high
+of Vinho province and the country. The Vinho Verde wine also enjoys high
 reputation worldwide. It is recurrently awarded in national and
 international competitions. The goal of this dataset is to model wine
 quality based on physicochemical tests. We believe that this dataset can
@@ -98,7 +98,7 @@ from the North of Portugal. The data was originally donated in 2009 by
 Professor Cortez. The specific mechanism of the collection of the data
 was lab work done on different wines to measure their chemical
 attributes (like acidity etc.). The quality of the wine however was
-obtained through the average rating of three wine experts. The dataset
+obtained through the average rating of three wine experts. The data set
 is divided into two: Red wine and White wine. Red Wine has 1599
 observations, and white wine has 4898 observations (each observation
 being a specific wine). Information about the wine include but are not
@@ -109,7 +109,7 @@ limited to:PH, Density, Acidity, and alcohol content.
 Each observation is a specific wine from the Vinho Verde region. Thus,
 there might be a little uncertainty in collecting the exact numbers for
 each numbers. However, since the Vinho Verde region is a vast region
-spreading 15500 hectareas of vineyards in far-north Portugal, this
+spreading 15500 hectares of vineyards in far-north Portugal, this
 uncertainty shouldn't be significant in our analysis or project. Thus,
 we will assume that the data are independent and random
 
