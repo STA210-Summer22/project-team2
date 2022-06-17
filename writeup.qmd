@@ -223,7 +223,9 @@ plot_grid(a1, a2, a3, a4, a5, a6, a7, a8, a9, ncol = 3, nrow = 3)
 
 #### Best AIC Model
 
-We choose best AIC model. What is that? Why? Reason and justification.
+To select the most optimal model to fit our data, we decided to conduct a stepwise AIC model. We can operationalise this as the model with the lowest AIC value to supplement which variables to add to or omit from to choose the model with the smallest amount of error or lowest residual sum of squares. AIC is an estimator of in-sample prediction error and a lower AIC values can indicate a more parsimonious model.
+
+In this stepwise AIC test, an algorithm uses specific procedures in which the AIC values of different models calculated to determine what covariates are added to or removed from the model and this process is repeated several times in both directions. After conducting the stepwise AIC test, we found that the combination of variables with the lowest AIC values were fixed acidity, volatile acidity, residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide, density, pH, and sulphates.
 
 Data split: we split the data into 25% testing set and 75% training set.
 ```{r datasplit, echo=FALSE}
@@ -310,7 +312,7 @@ wine_full_fit <- predict(wine_fit_full, wine_train, type = "prob") %>% bind_cols
 
 #### Model Selection
 
-```{r, echo=FALSE, fig.width=3, fig.height=2}
+```{r, echo=FALSE, fig.width=3, fig.height=2, fig.align='center'}
 wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
   bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
@@ -371,7 +373,7 @@ metrics_full <- collect_metrics(wine_full_rs, summarize = FALSE) %>% mutate(mode
 metrics_reduce <- collect_metrics(wine_AIC_rs, summarize = FALSE) %>% mutate(model = "Model 2 - Reduce")
 ```
 
-```{r, echo=FALSE, fig.height=4, fig.width=8}
+```{r, echo=FALSE, fig.height=4, fig.width=8, fig.align='center'}
 metrics <- bind_rows(metrics_full, metrics_reduce) %>%
 arrange(.metric)
 acc_p <- ggplot(metrics %>% filter(.metric == "accuracy"), 
