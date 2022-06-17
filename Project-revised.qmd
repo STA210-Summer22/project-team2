@@ -50,15 +50,15 @@ wine <- slice(wine, sample(1:n()))
 
 About 234 million hectoliters of wine were consumed in 2020, worldwide,
 with the US making up approximetly 14% of that consumption (Karlsson
-2020). Since Wine composition and wine quality varies widely, it raises
+2020). Since wine composition and wine quality varies widely, it raises
 the question: what makes a good wine?
 
 \par
 
 To answer that question, we will analyze the wine quality dataset from
-Vinho Verde vinyard in Portogal, and more importantly try to narrow down
-our question to make it possible for it to be supported by evidence.
-Below is the introduction to our research:
+Vinho Verde vineyard in Portugal, and more importantly try to narrow
+down our question to make it possible for it to be supported by
+evidence. Below is the introduction to our research:
 
 \par
 
@@ -327,9 +327,12 @@ wine_spec <- logistic_reg() %>% set_engine("glm")
 ```
 
 We plan to compare a full model and a reduced model. For the full model,
-we decide to include interactive terms. For the reduced model, we adopt the stepwise AIC test to get a best AIC model. 
+we decide to include interactive terms. For the reduced model, we adopt
+the stepwise AIC test to get a best AIC model.
 
-Initial speculation of the model. We'll include all the predictor variables and include all the interactive terms with colors at first.
+Initial speculation of the model: We'll include all the predictor
+variables and include all the interactive terms with colors at first.
+
 ```{r}
 wine_rec_initial <- recipe(
   good_wine ~., data = wine_train) %>%
@@ -353,8 +356,9 @@ kable(tidy(wine_fit_initial), digits = 3)
 ```
 
 From the table we can see that there are many variables with p-values
-greater than 0.05 under 95% CI, so we can drop some of those valuables
-if we were to conduct to a hypothesis test.
+greater than 0.05 under 95% CI. Since these variables are not
+significant, we can drop some of those valuables if we were to conduct
+to a hypothesis test.
 
 #### Full Logistic Model
 
@@ -409,7 +413,18 @@ wine_full_fit
 ```
 
 #### Stepwise AIC Model
-- We need to include reasons here. Why choose stepwise AIC model as the reduced model?
+
+To select the most optimal model to fit our data, we decided to conduct
+a stepwise AIC model. We can operationalise this as the model with the
+lowest AIC value to supplement which variables to add to or omit from to
+choose the model with the smallest amount of error or lowest residual
+sum of squares. AIC is an estimator of in-sample prediction error and a
+lower AIC values can indicate a more parsimonious model.
+
+In this stepwise AIC test, an algorithm uses specific procedures in
+which the AIC values of different models calculated to determine what
+covariates are added to or removed from the model and this process is
+repeated several times in both directions.
 
 ```{r}
 AIC_fit <- logistic_reg() %>%
@@ -421,7 +436,7 @@ AIC_fit_engine <- AIC_fit %>% extract_fit_engine()
 ```
 
 ```{r}
-best_AIC_model <- stepAIC(AIC_fit_engine, direction="forward", trace=FALSE)
+best_AIC_model <- stepAIC(AIC_fit_engine, direction="both", trace=FALSE)
 tidy(best_AIC_model)
 ```
 
@@ -431,6 +446,7 @@ best_AIC_fit <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %
 ```
 
 #### Model Selection
+
 ```{r}
 wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
   bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
@@ -447,6 +463,7 @@ best_AIC_fit %>%
 ```
 
 #### Cross Validation
+
 ```{r}
 best_AIC_rec <- recipe(
   good_wine ~ c_fixed.acidity + c_volatile.acidity + 
@@ -483,6 +500,7 @@ metrics_reduce <- collect_metrics(wine_AIC_rs, summarize = FALSE) %>% mutate(mod
 ```
 
 Graph for metrics
+
 ```{r}
 metrics <- bind_rows(metrics_full, metrics_reduce) %>%
 arrange(.metric)
@@ -494,6 +512,7 @@ group = model, color = model)) +
   labs(title = "Accuracy") +
   theme_bw()
 ```
+
 ```{r}
 ggplot(metrics %>% filter(.metric == "roc_auc"),
 
@@ -504,9 +523,12 @@ aes(x = id, y = .estimate,
   labs(title = "ROC-AUC") +
   theme_bw()
 ```
-The two models have similar accuracy and the roc-auc for 10 folds, so due to the principles of parsimonious, we prefer the reduce one. 
+
+The two models have similar accuracy and the roc-auc for 10 folds, so
+due to the principles of parsimony, we prefer the reduced model.
 
 The AOC curve of the reduce model's prediction:
+
 ```{r}
 best_AIC_pred <- predict(best_AIC_model, wine_test) %>% bind_cols(wine_test)
 best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
@@ -516,8 +538,9 @@ best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
 ```
 
 #### Conditions
-Logistic Model:
-linearity
+
+Logistic Model: linearity
+
 ```{r}
 emplogitplot1(good_wine ~ c_fixed.acidity, 
               data = wine, 
@@ -560,19 +583,29 @@ emplogitplot1(good_wine ~ c_alcohol + color,
               ngroups = 20)
 ```
 
-Not every variables satisfy the linearity condition. (This can be mentioned in the limitation part of the final report.)
+When conducting a logistic regression, it is important to check the
+conditions are satisfied. When evaluating if the log-odds have a linear
+relationship with the predictors, we find that the conditions for
+linearity are not satisfied for all the variables. The linearity
+conditions are particularly not fulfilled for the variables free sulfur
+dioxide (the spread takes on a curved shape), total sulfur dioxide (the
+spread has similarly curved shape), and sulphates (the data points
+appear to be randomly dispersed).
 
-Independence
-The independence is satisfied. The Vinho Verde region is a vast region
-spreading 15500 hectareas of vineyards in far-north Portugal, and the data are not collected across time.
+The independence conditions, however, are satisfied. The Vinho Verde
+region is a vast region spreading 15500 hectareas of vineyards in
+far-north Portugal allowing the observations to be collected
+independently from each other and the accumulated data are not collected
+across an extended period of time.
 
 ### Results
 
 -   model interpretation
-  - full model
-  - best AIC model
-  - AIC BIC ROC
--   model selection: do not include the interactive terms due to parsimonious. because the ROC does not improve much. 
+-   full model
+-   best AIC model
+-   AIC BIC ROC
+-   model selection: do not include the interactive terms due to
+    parsimonious. because the ROC does not improve much.
 
 ### Discussion & Conclusion
 
@@ -582,5 +615,7 @@ spreading 15500 hectareas of vineyards in far-north Portugal, and the data are n
 
 ### Reference
 
-Paulo Cortez, University of Minho, Guimarães, Portugal, http://www3.dsi.uminho.pt/pcortez
-A. Cerdeira, F. Almeida, T. Matos and J. Reis, Viticulture Commission of the Vinho Verde Region(CVRVV), Porto, Portugal, 2009.
+Paulo Cortez, University of Minho, Guimarães, Portugal,
+http://www3.dsi.uminho.pt/pcortez A. Cerdeira, F. Almeida, T. Matos and
+J. Reis, Viticulture Commission of the Vinho Verde Region(CVRVV), Porto,
+Portugal, 2009.
