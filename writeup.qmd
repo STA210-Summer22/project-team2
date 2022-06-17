@@ -329,10 +329,10 @@ wine_full_fit <- predict(wine_fit_full, wine_train, type = "prob") %>% bind_cols
 wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
   bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
+  geom_line() +
   labs(
     title = "Two Models' ROC Curves"
   )
-  geom_line()
 ```
 
 ```{r, echo=FALSE}
@@ -475,6 +475,7 @@ From our analysis, we found that the variables that contribute
 significantly to wine quality were fixed acidity, volatile acidity,
 residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide,
 density, pH, and sulfates. Variables with biggest coefficients are chlorides, volatile acidity, pH and sulphates. 
+It is worth-noticing that although the coefficient of density is very high, wine's density varies between approximate 0.99 to 1, therefore it is impossible for wine' density to jump 1 unit. So we do not include density as a influential factor. 
 
 - Negative effects:
 
