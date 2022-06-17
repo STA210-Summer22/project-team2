@@ -105,8 +105,6 @@ spreading 15500 hectares of vineyards in far-north Portugal, this
 uncertainty shouldn't be significant in our analysis or project. Thus,
 we will assume that the data are independent and random
 
-#### Exploratory Data Analysis
-
 ```{r datawrangling, echo=FALSE}
 wine <- wine %>%
   mutate(good_wine = if_else(quality >= 7,"1","0"))
@@ -118,6 +116,8 @@ wine <- wine %>%
 no1 <- colnames(wine)[1:11]
 colnames(wine)[1:11] = paste("c_", no1, sep = "")
 ```
+
+#### Exploratory Data Analysis
 
 ```{r distributions, echo=FALSE, message=FALSE, fig.align = "center"}
 p1  <- ggplot(data = wine, aes(x = quality) ) + 
@@ -177,7 +177,6 @@ p12 <- ggplot(data = wine, aes(x = c_alcohol) ) +
 
 plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ncol = 3, nrow = 4)
 ```
-
 ```{r, echo=FALSE, fig.height=6, fig.width=12, fig.align='center'}
 a1 <- ggplot(wine, aes(y = c_alcohol, x = as.factor(good_wine), color = color)) + 
   geom_boxplot() + 
@@ -269,14 +268,15 @@ best_AIC_fit <- predict(best_AIC_model, wine_train) %>% bind_cols(wine_train)
 best_AIC_fit <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
 ```
 
-#### ROC curve prediction
-
 ```{r, echo=FALSE, fig.width=3, fig.height=2, fig.align='center'}
 best_AIC_pred <- predict(best_AIC_model, wine_test) %>% bind_cols(wine_test)
 best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
 best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity)) +
-  geom_line()
+  geom_line() +
+  labs(
+    title = "Best AIC Model's ROC Curve on Prediction"
+  )
 ```
 
 ## Model Evaluation
@@ -329,6 +329,9 @@ wine_full_fit <- predict(wine_fit_full, wine_train, type = "prob") %>% bind_cols
 wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
   bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
+  labs(
+    title = "Two Models' ROC Curves"
+  )
   geom_line()
 ```
 
@@ -393,10 +396,10 @@ metrics <- bind_rows(metrics_full, metrics_reduce) %>%
 arrange(.metric)
 acc_p <- ggplot(metrics %>% filter(.metric == "accuracy"), 
                 aes(x = id, y = .estimate,
-                group = model, color = model)) + geom_point() + geom_line() + labs(title = "Accuracy") + theme_bw()
+                group = model, color = model)) + geom_point() + geom_line() + labs(title = "Accuracy", x = "Folds", y = "Estimate") + theme_bw()
 
 aoc_p <- ggplot(metrics %>% filter(.metric == "roc_auc"), aes(x = id, y = .estimate,
-    group = model, color = model)) + geom_point() + geom_line() + labs(title = "ROC-AUC") + theme_bw()
+    group = model, color = model)) + geom_point() + geom_line() + labs(title = "ROC-AUC", x = "Folds", y = "Estimate") + theme_bw()
 
 plot_grid(acc_p, aoc_p, nrow = 2)
 ```
@@ -464,26 +467,26 @@ across an extended period of time.
 
 We first conducted a pairwise test to obtain a Best AIC Model with no interactive terms, which is our reduced model. Then we include the interactive terms and build another logistic model, as our full model. We compared these two models' ROC curves, AIC, BIC. We also check the two models' accuracy and ROC-AUC through cross-validation. We found out that the two models have similar performances when predicting the quality of wine. Due to the principles of parsimonious, we prefer the simpler model. Therefore, we choose the reduced Best AIC Model as our best model. 
 
-## Discussion & Conclusion
-
-Our best model:
-
 $logodds(good~wine) = 399.637 + 0.452 \times fixed~acidity - 3.873 \times volatile~acidity + 0.212 \times residual~sugar - 8.125 \times chlorides + 0.014 \times free.sulfur.dioxide - 0.004 \times total.sulfur.dioxide - 420.73 \times density + 2.663 \times pH + 2.605 \times sulphates + 0.48 \times alcohol - 0.936 \times colorwhite$
+
+## Discussion & Conclusion
 
 From our analysis, we found that the variables that contribute
 significantly to wine quality were fixed acidity, volatile acidity,
 residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide,
 density, pH, and sulfates. Variables with biggest coefficients are chlorides, volatile acidity, pH and sulphates. 
 
-Negative effects:
+- Negative effects:
 
-Chlorides: a major contributor to saltiness.
-Volatile Acidity: a kind of acid which produces vinegar-like taste in wine. 
+  Chlorides: a major contributor to saltiness.
 
-Positive effects:
+  Volatile Acidity: a kind of acid which produces vinegar-like taste in wine. 
 
-pH: low pH wines will taste tart and crisp. 
-Sulphates: helps to preserve freshness.
+- Positive effects:
+
+  pH: low pH wines will taste tart and crisp. 
+
+  Sulphates: helps to preserve freshness.
 
 In the future, to improve the accuracy of the model, different stepwise
 algorithms (p-values for example) can be evaluated and adjusted. There
