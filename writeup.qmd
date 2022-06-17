@@ -1,7 +1,7 @@
 ---
 title: "writeup"
 subtitle: "STA 210 - Summer 2022"
-author: "Team 2 - Alicia Gong, Ashley Chen, Abdel Shehata, Claire Tam"
+author: "Team 2 - Alicia Gong, Ashley Chen, Abdel Shehata, Claire Tan"
 date: "6-16-2022"
 format: pdf
 editor: visual
@@ -44,16 +44,16 @@ wine <- slice(wine, sample(1:n()))
 #### Introduction
 
 About 234 million hectoliters of wine were consumed in 2020, worldwide,
-with the US making up approximetly 14% of that consumption (Karlsson
+with the US making up approximately 14% of that consumption (Karlsson
 2020). Since Wine composition and wine quality varies widely, it raises
 the question: what makes a good wine?
 
 \par
 
 To answer that question, we will analyze the wine quality dataset from
-Vinho Verde vinyard in Portogal, and more importantly try to narrow down
-our question to make it possible for it to be supported by evidence.
-Below is the introduction to our research:
+Vinho Verde vineyard in Portugal, and more importantly try to narrow
+down our question to make it possible for it to be supported by
+evidence. Below is the introduction to our research:
 
 \par
 
@@ -65,7 +65,7 @@ and is only produced from the indigenous grape varieties of the region.
 Vinho Verde region is one of the largest and oldest wine regions in the
 world, and is home to thousands of producers, generating a wealth of
 economic activity and jobs, and strongly contributes to the development
-of Minho province and the country. The Vinho Verde wine also enjoys high
+of Vinho province and the country. The Vinho Verde wine also enjoys high
 reputation worldwide. It is recurrently awarded in national and
 international competitions. The goal of this dataset is to model wine
 quality based on physicochemical tests. We believe that this dataset can
@@ -89,22 +89,21 @@ The Wine Quality dataset was collected from Vinho Verde wine Samples,
 from the North of Portugal. The data was originally donated in 2009 by
 Professor Cortez. The specific mechanism of the collection of the data
 was lab work done on different wines to measure their chemical
-attributites (like acidity etc.). The quality of the wine however was
+attributes (like acidity etc.). The quality of the wine however was
 obtained through the average rating of three wine experts. The dataset
 is divided into two: Red wine and White wine. Red Wine has 1599
 observations, and white wine has 4898 observations (each observation
 being a specific wine). Information about the wine include but are not
-limited to:PH,Density,Acidity, and alcohol content.
+limited to: pH, Density, Acidity, and alcohol content.
 
 \par
 
 Each observation is a specific wine from the Vinho Verde region. Thus,
-there might be a little uncertainity in collecting the exact numbers for
+there might be a little uncertainty in collecting the exact numbers for
 each numbers. However, since the Vinho Verde region is a vast region
-spreading 15500 hectareas of vineyards in far-north Portugal, this
-uncertainity shouldn't be significant in our analysis or project. Thus,
-we will assume that the datas are independent and random
-
+spreading 15500 hectares of vineyards in far-north Portugal, this
+uncertainty shouldn't be significant in our analysis or project. Thus,
+we will assume that the data are independent and random
 
 ```{r datawrangling, echo=FALSE}
 wine <- wine %>%
@@ -223,11 +222,23 @@ plot_grid(a1, a2, a3, a4, a5, a6, a7, a8, a9, ncol = 3, nrow = 3)
 
 #### Best AIC Model
 
-To select the most optimal model to fit our data, we decided to conduct a stepwise AIC model. We can operationalise this as the model with the lowest AIC value to supplement which variables to add to or omit from to choose the model with the smallest amount of error or lowest residual sum of squares. AIC is an estimator of in-sample prediction error and a lower AIC values can indicate a more parsimonious model.
+To select the most optimal model to fit our data, we decided to conduct
+a stepwise AIC model. We can operationalise this as the model with the
+lowest AIC value to supplement which variables to add to or omit from to
+choose the model with the smallest amount of error or lowest residual
+sum of squares. AIC is an estimator of in-sample prediction error and a
+lower AIC values can indicate a more parsimonious model.
 
-In this stepwise AIC test, an algorithm uses specific procedures in which the AIC values of different models calculated to determine what covariates are added to or removed from the model and this process is repeated several times in both directions. After conducting the stepwise AIC test, we found that the combination of variables with the lowest AIC values were fixed acidity, volatile acidity, residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide, density, pH, and sulphates.
+In this stepwise AIC test, an algorithm uses specific procedures in
+which the AIC values of different models calculated to determine what
+covariates are added to or removed from the model and this process is
+repeated several times in both directions. After conducting the stepwise
+AIC test, we found that the combination of variables with the lowest AIC
+values were fixed acidity, volatile acidity, residual sugar, chlorides,
+free sulfur dioxide, total sulfur dioxide, density, pH, and sulphates.
 
 Data split: we split the data into 25% testing set and 75% training set.
+
 ```{r datasplit, echo=FALSE}
 set.seed(222)
 
@@ -251,6 +262,7 @@ AIC_fit_engine <- AIC_fit %>% extract_fit_engine()
 best_AIC_model <- stepAIC(AIC_fit_engine, direction="forward", trace=FALSE)
 kable(tidy(best_AIC_model), digits = 3)
 ```
+
 $logodds(good~wine) = 399.637 + 0.452*fixed~acidity - 3.873*volatile~acidity + 0.212 * residual~sugar - 8.125*chlorides + 0.014*free.sulfur.dioxide - 0.004*total.sulfur.dioxide - 420.73*density + 2.663*pH + 2.605*sulphates + 0.48*alcohol - 0.936*colorwhite$
 
 ```{r, include=FALSE}
@@ -261,6 +273,7 @@ best_AIC_fit <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %
 \pagebreak
 
 #### ROC curve prediction
+
 ```{r, echo=FALSE, fig.width=3, fig.height=2, fig.align='center'}
 best_AIC_pred <- predict(best_AIC_model, wine_test) %>% bind_cols(wine_test)
 best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
@@ -272,7 +285,9 @@ best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
 ### Model Evaluation
 
 #### Logistic Model
-We compare the best AIC model with a logistic model with interactive terms. 
+
+We compare the best AIC model with a logistic model with interactive
+terms.
 
 ```{r, echo=FALSE}
 wine_spec <- logistic_reg() %>% set_engine("glm")
@@ -302,6 +317,7 @@ wine_fit_full <- wine_wflow_full %>%
   fit(data = wine_train)
 kable(tidy(wine_fit_full), digits = 3)
 ```
+
 $logodds(good~wine) = 385.310 + 0.401*fixed~acidity - 3.865*volatile~acidity + 0.256 * residual~sugar - 10.221*chlorides + 0.017 * free.sulfur.dioxide - 0.021*total.sulfur.dioxide - 375.495*density + 0.996*pH + 4.272*sulphates + 0.634*alcohol + 150.216*colorwhite - 0.004*free.sulfur.dioxide x colorwhite + 0.02*total.sulfur.dioxide x colorwhite - 154.703*density x colorwhite + 1.946*pH x colorwhite - 2.219*sulphates x colorwhite - 0.316*alcohol x colorwhite$
 
 ```{r, echo=FALSE}
@@ -320,7 +336,8 @@ wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(mo
   geom_line()
 ```
 
-The two ROC curves are very close, suggesting that the two models' performances are similar. 
+The two ROC curves are very close, suggesting that the two models'
+performances are similar.
 
 ```{r, echo=FALSE}
 aoc_logistic <- wine_full_fit %>% 
@@ -387,7 +404,10 @@ aoc_p <- ggplot(metrics %>% filter(.metric == "roc_auc"), aes(x = id, y = .estim
 plot_grid(acc_p, aoc_p, nrow = 2)
 ```
 
-To perform the cross validation, we split the training data into 10 folds. The two models have similar accuracy and the roc-auc for 10 folds, so due to the principles of parsimonious, we prefer the reduce one. 
+To perform the cross validation, we split the training data into 10
+folds. The two models have similar accuracy and the roc-auc for 10
+folds, so due to the principles of parsimonious, we prefer the reduce
+one.
 
 #### Check Conditions
 
@@ -443,7 +463,7 @@ spread has similarly curved shape), and sulphates (the data points
 appear to be randomly dispersed).
 
 The independence conditions, however, are satisfied. The Vinho Verde
-region is a vast region spreading 15500 hectareas of vineyards in
+region is a vast region spreading 15500 hectares of vineyards in
 far-north Portugal allowing the observations to be collected
 independently from each other and the accumulated data are not collected
 across an extended period of time.
@@ -451,10 +471,11 @@ across an extended period of time.
 ### Results
 
 -   model interpretation
-  - full model
-  - best AIC model
-  - AIC BIC ROC
--   model selection: do not include the interactive terms due to parsimonious. because the ROC does not improve much.
+-   full model
+-   best AIC model
+-   AIC BIC ROC
+-   model selection: do not include the interactive terms due to
+    parsimonious. because the ROC does not improve much.
 
 From our analysis, we found that the variables that contribute
 significantly to wine quality were fixed acidity, volatile acidity,
@@ -486,5 +507,7 @@ machine learning algorithms to better predict our results.
 
 ### Reference
 
-Paulo Cortez, University of Minho, Guimarães, Portugal, http://www3.dsi.uminho.pt/pcortez
-A. Cerdeira, F. Almeida, T. Matos and J. Reis, Viticulture Commission of the Vinho Verde Region(CVRVV), Porto, Portugal, 2009.
+Paulo Cortez, University of Minho, Guimarães, Portugal,
+http://www3.dsi.uminho.pt/pcortez A. Cerdeira, F. Almeida, T. Matos and
+J. Reis, Viticulture Commission of the Vinho Verde Region(CVRVV), Porto,
+Portugal, 2009.
