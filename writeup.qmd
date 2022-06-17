@@ -223,7 +223,9 @@ plot_grid(a1, a2, a3, a4, a5, a6, a7, a8, a9, ncol = 3, nrow = 3)
 
 #### Best AIC Model
 
-We choose best AIC model. What is that? Why? Reason and justification.
+To select the most optimal model to fit our data, we decided to conduct a stepwise AIC model. We can operationalise this as the model with the lowest AIC value to supplement which variables to add to or omit from to choose the model with the smallest amount of error or lowest residual sum of squares. AIC is an estimator of in-sample prediction error and a lower AIC values can indicate a more parsimonious model.
+
+In this stepwise AIC test, an algorithm uses specific procedures in which the AIC values of different models calculated to determine what covariates are added to or removed from the model and this process is repeated several times in both directions. After conducting the stepwise AIC test, we found that the combination of variables with the lowest AIC values were fixed acidity, volatile acidity, residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide, density, pH, and sulphates.
 
 Data split: we split the data into 25% testing set and 75% training set.
 ```{r datasplit, echo=FALSE}
@@ -244,10 +246,12 @@ AIC_fit_engine <- AIC_fit %>% extract_fit_engine()
 ```
 
 #### Model output
+
 ```{r, echo=FALSE}
 best_AIC_model <- stepAIC(AIC_fit_engine, direction="forward", trace=FALSE)
 kable(tidy(best_AIC_model), digits = 3)
 ```
+$logodds(good~wine) = 399.637 + 0.452*fixed~acidity - 3.873*volatile~acidity + 0.212 * residual~sugar - 8.125*chlorides + 0.014*free.sulfur.dioxide - 0.004*total.sulfur.dioxide - 420.73*density + 2.663*pH + 2.605*sulphates + 0.48*alcohol - 0.936*colorwhite$
 
 ```{r, include=FALSE}
 best_AIC_fit <- predict(best_AIC_model, wine_train) %>% bind_cols(wine_train)
@@ -279,8 +283,6 @@ wine_rec_full <- recipe(
   good_wine ~., data = wine_train) %>%
   step_rm(good_wine_names) %>%
   step_rm(quality) %>%
-  step_rm(c_pH) %>%
-  step_rm(c_free.sulfur.dioxide) %>%
   step_rm(c_citric.acid) %>%
   step_dummy(all_nominal_predictors()) %>%
   step_interact(terms = ~starts_with("c_"):starts_with("color")) %>%
@@ -300,6 +302,7 @@ wine_fit_full <- wine_wflow_full %>%
   fit(data = wine_train)
 kable(tidy(wine_fit_full), digits = 3)
 ```
+$logodds(good~wine) = 385.310 + 0.401*fixed~acidity - 3.865*volatile~acidity + 0.256 * residual~sugar - 10.221*chlorides + 0.017 * free.sulfur.dioxide - 0.021*total.sulfur.dioxide - 375.495*density + 0.996*pH + 4.272*sulphates + 0.634*alcohol + 150.216*colorwhite - 0.004*free.sulfur.dioxide x colorwhite + 0.02*total.sulfur.dioxide x colorwhite - 154.703*density x colorwhite + 1.946*pH x colorwhite - 2.219*sulphates x colorwhite - 0.316*alcohol x colorwhite$
 
 ```{r, echo=FALSE}
 wine_full_test <- wine_wflow_full %>%
@@ -310,13 +313,13 @@ wine_full_fit <- predict(wine_fit_full, wine_train, type = "prob") %>% bind_cols
 
 #### Model Selection
 
-Compare two ROC curves.
-```{r, echo=FALSE, fig.width=3, fig.height=2}
+```{r, echo=FALSE, fig.width=3, fig.height=2, fig.align='center'}
 wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
   bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
   geom_line()
 ```
+
 The two ROC curves are very close, suggesting that the two models' performances are similar. 
 
 ```{r, echo=FALSE}
@@ -336,7 +339,6 @@ kable(twoaoc, digits = 3)
 
 #### Cross Validation
 
-To perform the cross validation, we split the training data into 10 folds. 
 ```{r, echo=FALSE}
 best_AIC_rec <- recipe(
   good_wine ~ c_fixed.acidity + c_volatile.acidity + 
@@ -372,7 +374,7 @@ metrics_full <- collect_metrics(wine_full_rs, summarize = FALSE) %>% mutate(mode
 metrics_reduce <- collect_metrics(wine_AIC_rs, summarize = FALSE) %>% mutate(model = "Model 2 - Reduce")
 ```
 
-```{r, echo=FALSE, fig.height=4, fig.width=8}
+```{r, echo=FALSE, fig.height=4, fig.width=8, fig.align='center'}
 metrics <- bind_rows(metrics_full, metrics_reduce) %>%
 arrange(.metric)
 acc_p <- ggplot(metrics %>% filter(.metric == "accuracy"), 
@@ -385,7 +387,7 @@ aoc_p <- ggplot(metrics %>% filter(.metric == "roc_auc"), aes(x = id, y = .estim
 plot_grid(acc_p, aoc_p, nrow = 2)
 ```
 
-The two models have similar accuracy and the roc-auc for 10 folds, so due to the principles of parsimonious, we prefer the reduce one. 
+To perform the cross validation, we split the training data into 10 folds. The two models have similar accuracy and the roc-auc for 10 folds, so due to the principles of parsimonious, we prefer the reduce one. 
 
 #### Check Conditions
 
@@ -431,10 +433,20 @@ emplogitplot1(good_wine ~ c_alcohol + color,
               ngroups = 20)
 ```
 
+When conducting a logistic regression, it is important to check the
+conditions are satisfied. When evaluating if the log-odds have a linear
+relationship with the predictors, we find that the conditions for
+linearity are not satisfied for all the variables. The linearity
+conditions are particularly not fulfilled for the variables free sulfur
+dioxide (the spread takes on a curved shape), total sulfur dioxide (the
+spread has similarly curved shape), and sulphates (the data points
+appear to be randomly dispersed).
 
-Not every variables satisfy the linearity condition. (This can be mentioned in the limitation part of the final report.)
-The independence is satisfied. The Vinho Verde region is a vast region
-spreading 15500 hectareas of vineyards in far-north Portugal, and the data are not collected across time.
+The independence conditions, however, are satisfied. The Vinho Verde
+region is a vast region spreading 15500 hectareas of vineyards in
+far-north Portugal allowing the observations to be collected
+independently from each other and the accumulated data are not collected
+across an extended period of time.
 
 ### Results
 
@@ -442,12 +454,34 @@ spreading 15500 hectareas of vineyards in far-north Portugal, and the data are n
   - full model
   - best AIC model
   - AIC BIC ROC
--   model selection: do not include the interactive terms due to parsimonious. because the ROC does not improve much. 
+-   model selection: do not include the interactive terms due to parsimonious. because the ROC does not improve much.
+
+From our analysis, we found that the variables that contribute
+significantly to wine quality were fixed acidity, volatile acidity,
+residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide,
+density, pH, and sulfates. Beta weights can be rank ordered to determine
+which variable is the strongest predictor. Variables with the biggest
+beta have the strongest influence in wine quality which can be
+determined from the regression coefficient. The predictors from
+strongest to weakest influence in wine quality were
 
 ### Discussion & Conclusion
 
+To answer our research question "what chemical components contribute to
+the quality of wine?" we implemented a stepwise AIC test to determine
+model with the most significant predictor variables and calculated the
+beta weights and p-values for each of the variables.
+
 -   what chemical components contribute to wine quality
+
 -   future research suggestions
+
+In the future, to improve the accuracy of the model, different stepwise
+algorithms (p-values for example) can be evaluated and adjusted. There
+are many different methods such as through feature engineering, viewing
+potential interaction terms, or other performance measurements such as
+machine learning algorithms to better predict our results.
+
 -   suggestions to wine valley?
 
 ### Reference
