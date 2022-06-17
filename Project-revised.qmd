@@ -49,7 +49,7 @@ wine <- slice(wine, sample(1:n()))
 #### Introduction
 
 About 234 million hectoliters of wine were consumed in 2020, worldwide,
-with the US making up approximetly 14% of that consumption (Karlsson
+with the US making up approximately 14% of that consumption (Karlsson
 2020). Since wine composition and wine quality varies widely, it raises
 the question: what makes a good wine?
 
@@ -93,11 +93,11 @@ affects the variation of the wine quality.
 
 #### Data Introduction
 
-The Wine Quality dataset was collected from Vinho Verde wine Samples,
+The Wine Quality dataset was collected from Vinho Verde wine samples,
 from the North of Portugal. The data was originally donated in 2009 by
 Professor Cortez. The specific mechanism of the collection of the data
 was lab work done on different wines to measure their chemical
-attributites (like acidity etc.). The quality of the wine however was
+attributes (like acidity etc.). The quality of the wine however was
 obtained through the average rating of three wine experts. The dataset
 is divided into two: Red wine and White wine. Red Wine has 1599
 observations, and white wine has 4898 observations (each observation
@@ -107,11 +107,11 @@ limited to:PH, Density, Acidity, and alcohol content.
 \par
 
 Each observation is a specific wine from the Vinho Verde region. Thus,
-there might be a little uncertainity in collecting the exact numbers for
+there might be a little uncertainty in collecting the exact numbers for
 each numbers. However, since the Vinho Verde region is a vast region
 spreading 15500 hectareas of vineyards in far-north Portugal, this
-uncertainity shouldn't be significant in our analysis or project. Thus,
-we will assume that the datas are independent and random
+uncertainty shouldn't be significant in our analysis or project. Thus,
+we will assume that the data are independent and random
 
 ```{r glimpse}
 glimpse(wine)
@@ -609,8 +609,11 @@ across an extended period of time.
 -   model interpretation
 
 -   full model
+
 -   best AIC model
+
 -   AIC BIC ROC
+
 -   model selection: do not include the interactive terms due to
     parsimonious. because the ROC does not improve much.
 
