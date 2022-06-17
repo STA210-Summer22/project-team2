@@ -1,0 +1,456 @@
+---
+title: "writeup"
+subtitle: "STA 210 - Summer 2022"
+author: "Team 2 - Alicia Gong, Ashley Chen, Abdel Shehata, Claire Tam"
+date: "6-16-2022"
+format: pdf
+editor: visual
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r, echo=FALSE, message=FALSE}
+#| label: load-pkg-data
+#| message: false
+#| warning: false
+library(tidyverse)
+library(tidymodels)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(knitr)
+library(recipes)
+library(caret)
+library(InformationValue)
+library(ISLR)
+library(MASS)
+library(nnet)
+library(Stat2Data)
+```
+
+```{r echo=FALSE, message=FALSE}
+#| label: load data
+redwine <- read.csv("data/winequality-red.csv", sep = ";")
+whitewine <- read.csv("data/winequality-white.csv", sep = ";")
+redwine <- redwine %>% mutate(color="red")
+whitewine <- whitewine %>% mutate(color="white")
+wine <- redwine %>% full_join(whitewine)
+wine <- slice(wine, sample(1:n()))
+```
+
+### Introduction and Data
+
+#### Introduction
+
+About 234 million hectoliters of wine were consumed in 2020, worldwide,
+with the US making up approximetly 14% of that consumption (Karlsson
+2020). Since Wine composition and wine quality varies widely, it raises
+the question: what makes a good wine?
+
+\par
+
+To answer that question, we will analyze the wine quality dataset from
+Vinho Verde vinyard in Portogal, and more importantly try to narrow down
+our question to make it possible for it to be supported by evidence.
+Below is the introduction to our research:
+
+\par
+
+Project Goal: To identify variables that are important in explaining
+variation in the response. "Vinho Verde" is the kind of wine exclusively
+produced in the demarcated region of Vinho Verde in northwestern
+Portugal. The Vinho Verde wine has its own unique system of production
+and is only produced from the indigenous grape varieties of the region.
+Vinho Verde region is one of the largest and oldest wine regions in the
+world, and is home to thousands of producers, generating a wealth of
+economic activity and jobs, and strongly contributes to the development
+of Minho province and the country. The Vinho Verde wine also enjoys high
+reputation worldwide. It is recurrently awarded in national and
+international competitions. The goal of this dataset is to model wine
+quality based on physicochemical tests. We believe that this dataset can
+also be used to analyze the relationship between different chemical
+compositions and the ratings of wine quality. We believe that this
+dataset can also be used to analyze what chemical factors are
+attributable to the final rating of Vinho Verde wine. Our research may
+shed light on future research and development directions for improving
+the quality of Vinho Verde wine, which may also contribute to the
+competitiveness of Portuguese wine industry.
+
+\par
+
+Our goal is to produce a classification model that best explains how
+different chemical compositions of the Portuguese "Vinho Verde" wine
+affects the variation of the wine quality.
+
+#### Data Introduction
+
+The Wine Quality dataset was collected from Vinho Verde wine Samples,
+from the North of Portugal. The data was originally donated in 2009 by
+Professor Cortez. The specific mechanism of the collection of the data
+was lab work done on different wines to measure their chemical
+attributites (like acidity etc.). The quality of the wine however was
+obtained through the average rating of three wine experts. The dataset
+is divided into two: Red wine and White wine. Red Wine has 1599
+observations, and white wine has 4898 observations (each observation
+being a specific wine). Information about the wine include but are not
+limited to:PH,Density,Acidity, and alcohol content.
+
+\par
+
+Each observation is a specific wine from the Vinho Verde region. Thus,
+there might be a little uncertainity in collecting the exact numbers for
+each numbers. However, since the Vinho Verde region is a vast region
+spreading 15500 hectareas of vineyards in far-north Portugal, this
+uncertainity shouldn't be significant in our analysis or project. Thus,
+we will assume that the datas are independent and random
+
+
+```{r datawrangling, echo=FALSE}
+wine <- wine %>%
+  mutate(good_wine = if_else(quality >= 7,"1","0"))
+wine <- wine %>%
+  mutate(good_wine = as.factor(good_wine))
+wine <- wine %>%
+  mutate(good_wine_names = if_else(good_wine=="1","Good wine","Bad or subpar wine"))
+
+no1 <- colnames(wine)[1:11]
+colnames(wine)[1:11] = paste("c_", no1, sep = "")
+```
+
+#### Exploratory Data Analysis
+
+```{r distributions, echo=FALSE, message=FALSE, fig.align = "center"}
+p1  <- ggplot(data = wine, aes(x = quality) ) + 
+  geom_bar(fill = "pink") + 
+  labs(x = "quality")
+
+p2  <- ggplot(data = wine, aes(x = c_fixed.acidity) ) + 
+  geom_histogram(fill = "pink") + 
+  labs(x = "fixed acidity")
+
+p3  <- ggplot(data = wine, aes(x = c_volatile.acidity) ) + 
+  theme(axis.text=element_text(size=9)) + 
+  geom_histogram(fill = "pink") + 
+  labs(x = "volatile acidity")
+
+p4  <- ggplot(data = wine, aes(x = c_citric.acid) ) + 
+  theme(axis.text = element_text(size=9)) + 
+  geom_histogram(fill = "pink") + 
+  labs(x = "citric acid")
+
+p5  <- ggplot(data = wine, aes(x = c_residual.sugar) ) +
+  geom_histogram(fill = "pink") + 
+  labs(x = "residual sugar")
+
+p6  <- ggplot(data = wine, aes(x = c_chlorides) ) + 
+  theme(axis.text = element_text(size = 11)) + 
+  geom_histogram(fill = "pink") + 
+  labs(x = "chlorides")
+
+p7  <- ggplot(data = wine, aes(x = c_free.sulfur.dioxide) ) + 
+  theme(axis.text = element_text(size=9)) + 
+  geom_histogram(fill = "pink") + 
+  labs(x = "free sulfur dioxide")
+
+p8  <- ggplot(data = wine, aes(x = c_total.sulfur.dioxide) ) + 
+  theme(axis.text = element_text(size=9)) + 
+  geom_histogram(fill = "pink") + 
+  labs(x = "total sulfur dioxide")
+
+p9  <- ggplot(data = wine, aes(x = c_density) ) + 
+  theme(axis.text = element_text(size = 7.5)) + 
+  geom_histogram(fill= "pink") + 
+  labs(x = "density")
+
+p10 <- ggplot(data = wine, aes(x = c_pH) ) + 
+  geom_histogram(fill = "pink") + 
+  labs(x = "pH")
+
+p11 <- ggplot(data = wine, aes(x = c_sulphates) ) + 
+  theme(axis.text = element_text(size=9)) + 
+  geom_histogram(fill= "pink") + 
+  labs(x = "sulphates")
+
+p12 <- ggplot(data = wine, aes(x = c_alcohol) ) + 
+  geom_histogram(fill= "pink") + 
+  labs(x = "alcohol")
+
+plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ncol = 3, nrow = 4)
+```
+
+```{r, echo=FALSE, fig.height=4, fig.width=8, fig.align='center'}
+a1 <- ggplot(wine, aes(y = c_alcohol, x = as.factor(good_wine), color = color)) + 
+  geom_boxplot() + 
+  labs(x = "good wine", y = "alcohol")
+
+a2 <- ggplot(wine, aes(y = c_density, x = as.factor(good_wine), color = color)) + 
+  geom_boxplot() + 
+  labs(x = "good wine", y = "density")
+
+a3 <- ggplot(wine, aes(y = c_volatile.acidity, x = as.factor(good_wine), color = color)) + 
+  geom_boxplot() + 
+  labs(x = "good wine", y = "volatile acidity")
+
+a4 <- ggplot(wine, aes(y = c_chlorides, x = as.factor(good_wine), color = color)) + 
+  geom_boxplot() + 
+  labs(x = "good wine", y = "chlorides")
+
+a5 <- ggplot(wine, aes(y = c_sulphates, x = as.factor(good_wine), color = color)) + 
+  geom_boxplot() + 
+  labs(x = "good wine", y = "sulphates")
+
+a6 <- ggplot(wine, aes(y = c_pH, x = as.factor(good_wine), color = color)) + 
+  geom_boxplot() + 
+  labs(x = "good wine", y = "pH")
+
+a7 <- ggplot(wine, aes(y = c_total.sulfur.dioxide, x = as.factor(good_wine), color = color)) + 
+  geom_boxplot() + 
+  labs(x = "good wine", y = "Total Sulfur Dioxide")
+
+a8 <- ggplot(wine, aes(y = c_residual.sugar, x = as.factor(good_wine), color = color)) + 
+  geom_boxplot() + 
+  labs(x = "good wine", y = "Residual Sugar")
+
+a9 <- ggplot(wine, aes(y = c_free.sulfur.dioxide, x = as.factor(good_wine), color = color)) + 
+  geom_boxplot() + 
+  labs(x = "good wine", y = "Free Sulfur Dioxide")
+
+plot_grid(a1, a2, a3, a4, a5, a6, a7, a8, a9, ncol = 3, nrow = 3)
+```
+
+### Methodology
+
+#### Best AIC Model
+
+We choose best AIC model. What is that? Why? Reason and justification.
+
+Data split: we split the data into 25% testing set and 75% training set.
+```{r datasplit, echo=FALSE}
+set.seed(222)
+
+wine_split <- initial_split(wine, prop = 3/4)
+wine_train <- training(wine_split)
+wine_test <- training(wine_split)
+```
+
+```{r, echo=FALSE}
+AIC_fit <- logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(good_wine~.-c_citric.acid-quality-good_wine_names, data = wine_train)
+
+AIC_fit <- repair_call(AIC_fit, data = wine_train)
+AIC_fit_engine <- AIC_fit %>% extract_fit_engine() 
+```
+
+#### Model output
+```{r, echo=FALSE}
+best_AIC_model <- stepAIC(AIC_fit_engine, direction="forward", trace=FALSE)
+kable(tidy(best_AIC_model), digits = 3)
+```
+
+```{r, include=FALSE}
+best_AIC_fit <- predict(best_AIC_model, wine_train) %>% bind_cols(wine_train)
+best_AIC_fit <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
+```
+
+\pagebreak
+
+#### ROC curve prediction
+```{r, echo=FALSE, fig.width=3, fig.height=2, fig.align='center'}
+best_AIC_pred <- predict(best_AIC_model, wine_test) %>% bind_cols(wine_test)
+best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
+best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
+  ggplot(aes(x = 1 - specificity, y = sensitivity)) +
+  geom_line()
+```
+
+### Model Evaluation
+
+#### Logistic Model
+We compare the best AIC model with a logistic model with interactive terms. 
+
+```{r, echo=FALSE}
+wine_spec <- logistic_reg() %>% set_engine("glm")
+```
+
+```{r, echo=FALSE}
+wine_rec_full <- recipe(
+  good_wine ~., data = wine_train) %>%
+  step_rm(good_wine_names) %>%
+  step_rm(quality) %>%
+  step_rm(c_pH) %>%
+  step_rm(c_free.sulfur.dioxide) %>%
+  step_rm(c_citric.acid) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_interact(terms = ~starts_with("c_"):starts_with("color")) %>%
+  step_rm(c_chlorides_x_color_white) %>%
+  step_rm(c_residual.sugar_x_color_white) %>%
+  step_rm(c_volatile.acidity_x_color_white) %>%
+  step_rm(c_fixed.acidity_x_color_white) %>%
+  step_zv(all_predictors())
+```
+
+```{r, echo=FALSE}
+wine_wflow_full <- workflow() %>%
+  add_model(wine_spec) %>%
+  add_recipe(wine_rec_full)
+
+wine_fit_full <- wine_wflow_full %>%
+  fit(data = wine_train)
+kable(tidy(wine_fit_full), digits = 3)
+```
+
+```{r, echo=FALSE}
+wine_full_test <- wine_wflow_full %>%
+  fit(data = wine_test)
+
+wine_full_fit <- predict(wine_fit_full, wine_train, type = "prob") %>% bind_cols(wine_train)
+```
+
+#### Model Selection
+
+Compare two ROC curves.
+```{r, echo=FALSE, fig.width=3, fig.height=2}
+wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
+  bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
+  ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
+  geom_line()
+```
+The two ROC curves are very close, suggesting that the two models' performances are similar. 
+
+```{r, echo=FALSE}
+aoc_logistic <- wine_full_fit %>% 
+  roc_auc(truth = as.factor(good_wine), .pred_0) %>%
+  mutate(model = "Logistic Model")
+
+aoc_AIC <- best_AIC_fit %>% 
+  roc_auc(truth = as.factor(good_wine), .pred_0) %>%
+  mutate(model = "Best AIC Model")
+
+twoaoc <- bind_rows(aoc_logistic, aoc_AIC) %>%
+arrange(.metric) %>% relocate(model, .before = .metric)
+
+kable(twoaoc, digits = 3)
+```
+
+#### Cross Validation
+
+To perform the cross validation, we split the training data into 10 folds. 
+```{r, echo=FALSE}
+best_AIC_rec <- recipe(
+  good_wine ~ c_fixed.acidity + c_volatile.acidity + 
+    c_citric.acid + c_residual.sugar + c_chlorides + c_free.sulfur.dioxide + 
+    c_total.sulfur.dioxide + c_density + c_pH + c_sulphates + 
+    c_alcohol + quality + color + good_wine_names, data = wine_train) %>%
+  step_rm(c_citric.acid) %>%
+  step_rm(quality) %>%
+  step_rm(good_wine_names) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+
+wine_wflow_reduce <- workflow() %>%
+  add_model(wine_spec) %>%
+  add_recipe(best_AIC_rec)
+```
+
+```{r, echo=FALSE}
+set.seed(345)
+folds <- vfold_cv(wine_train, v = 10)
+```
+
+```{r, echo=FALSE}
+wine_full_rs <- wine_wflow_full %>%
+  fit_resamples(folds)
+
+wine_AIC_rs <- wine_wflow_reduce %>%
+  fit_resamples(folds)
+```
+
+```{r, echo=FALSE}
+metrics_full <- collect_metrics(wine_full_rs, summarize = FALSE) %>% mutate(model = "Model 1 - Full")
+metrics_reduce <- collect_metrics(wine_AIC_rs, summarize = FALSE) %>% mutate(model = "Model 2 - Reduce")
+```
+
+```{r, echo=FALSE, fig.height=4, fig.width=8}
+metrics <- bind_rows(metrics_full, metrics_reduce) %>%
+arrange(.metric)
+acc_p <- ggplot(metrics %>% filter(.metric == "accuracy"), 
+                aes(x = id, y = .estimate,
+                group = model, color = model)) + geom_point() + geom_line() + labs(title = "Accuracy") + theme_bw()
+
+aoc_p <- ggplot(metrics %>% filter(.metric == "roc_auc"), aes(x = id, y = .estimate,
+    group = model, color = model)) + geom_point() + geom_line() + labs(title = "ROC-AUC") + theme_bw()
+
+plot_grid(acc_p, aoc_p, nrow = 2)
+```
+
+The two models have similar accuracy and the roc-auc for 10 folds, so due to the principles of parsimonious, we prefer the reduce one. 
+
+#### Check Conditions
+
+```{r, include=FALSE}
+emplogitplot1(good_wine ~ c_fixed.acidity, 
+              data = wine, 
+              ngroups = 20)
+
+emplogitplot1(good_wine ~ c_volatile.acidity, 
+              data = wine, 
+              ngroups = 20)
+
+emplogitplot1(good_wine ~ c_free.sulfur.dioxide, 
+              data = wine, 
+              ngroups = 30)
+
+emplogitplot1(good_wine ~ c_residual.sugar, 
+              data = wine, 
+              ngroups = 30)
+
+emplogitplot1(good_wine ~ c_chlorides, 
+              data = wine, 
+              ngroups = 30)
+
+emplogitplot1(good_wine ~ c_total.sulfur.dioxide, 
+              data = wine, 
+              ngroups = 30)
+
+emplogitplot1(good_wine ~ c_density, 
+              data = wine, 
+              ngroups = 30)
+
+emplogitplot1(good_wine ~ c_pH + color, 
+              data = wine, 
+              ngroups = 30)
+
+emplogitplot1(good_wine ~ c_sulphates, 
+              data = wine, 
+              ngroups = 30)
+
+emplogitplot1(good_wine ~ c_alcohol + color, 
+              data = wine, 
+              ngroups = 20)
+```
+
+
+Not every variables satisfy the linearity condition. (This can be mentioned in the limitation part of the final report.)
+The independence is satisfied. The Vinho Verde region is a vast region
+spreading 15500 hectareas of vineyards in far-north Portugal, and the data are not collected across time.
+
+### Results
+
+-   model interpretation
+  - full model
+  - best AIC model
+  - AIC BIC ROC
+-   model selection: do not include the interactive terms due to parsimonious. because the ROC does not improve much. 
+
+### Discussion & Conclusion
+
+-   what chemical components contribute to wine quality
+-   future research suggestions
+-   suggestions to wine valley?
+
+### Reference
+
+Paulo Cortez, University of Minho, Guimarães, Portugal, http://www3.dsi.uminho.pt/pcortez
+A. Cerdeira, F. Almeida, T. Matos and J. Reis, Viticulture Commission of the Vinho Verde Region(CVRVV), Porto, Portugal, 2009.
