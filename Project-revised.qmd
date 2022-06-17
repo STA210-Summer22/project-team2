@@ -82,6 +82,9 @@ shed light on future research and development directions for improving
 the quality of Vinho Verde wine, which may also contribute to the
 competitiveness of Portuguese wine industry.
 
+Research Question: What chemical components contribute to the quality of
+wine?
+
 \par
 
 Our goal is to produce a classification model that best explains how
@@ -99,7 +102,7 @@ obtained through the average rating of three wine experts. The dataset
 is divided into two: Red wine and White wine. Red Wine has 1599
 observations, and white wine has 4898 observations (each observation
 being a specific wine). Information about the wine include but are not
-limited to:PH,Density,Acidity, and alcohol content.
+limited to:PH, Density, Acidity, and alcohol content.
 
 \par
 
@@ -424,7 +427,10 @@ lower AIC values can indicate a more parsimonious model.
 In this stepwise AIC test, an algorithm uses specific procedures in
 which the AIC values of different models calculated to determine what
 covariates are added to or removed from the model and this process is
-repeated several times in both directions.
+repeated several times in both directions. After conducting the stepwise
+AIC test, we found that the combination of variables with the lowest AIC
+values were fixed acidity, volatile acidity, residual sugar, chlorides,
+free sulfur dioxide, total sulfur dioxide, density, pH, and sulphates.
 
 ```{r}
 AIC_fit <- logistic_reg() %>%
@@ -448,10 +454,10 @@ best_AIC_fit <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %
 #### Model Selection
 
 ```{r}
-wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
-  bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
+wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1 - Full Model") %>%
+  bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2 - Best AIC Fit Model")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
-  geom_line()
+  geom_line() + labs(x = "1 - specificity", y = "sensitivity", title = "ROC Curve for Full Model vs. Best AIC Fit Model")
 ```
 
 ```{r}
@@ -509,7 +515,7 @@ aes(x = id, y = .estimate,
 group = model, color = model)) +
   geom_point() +
   geom_line() +
-  labs(title = "Accuracy") +
+  labs(title = "Accuracy for Each Fold") +
   theme_bw()
 ```
 
@@ -520,7 +526,7 @@ aes(x = id, y = .estimate,
     group = model, color = model)) +
   geom_point() +
   geom_line() +
-  labs(title = "ROC-AUC") +
+  labs(title = "ROC-AUC Values for Each Fold") +
   theme_bw()
 ```
 
@@ -534,7 +540,7 @@ best_AIC_pred <- predict(best_AIC_model, wine_test) %>% bind_cols(wine_test)
 best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
 best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity)) +
-  geom_line()
+  geom_line() + labs(x = "1 - specificity", y = "sensitivity", title = "ROC Curve for Best AIC Model")
 ```
 
 #### Conditions
@@ -544,7 +550,7 @@ Logistic Model: linearity
 ```{r}
 emplogitplot1(good_wine ~ c_fixed.acidity, 
               data = wine, 
-              ngroups = 20)
+              ngroups = 20) 
 
 emplogitplot1(good_wine ~ c_volatile.acidity, 
               data = wine, 
@@ -601,16 +607,39 @@ across an extended period of time.
 ### Results
 
 -   model interpretation
+
 -   full model
 -   best AIC model
 -   AIC BIC ROC
 -   model selection: do not include the interactive terms due to
     parsimonious. because the ROC does not improve much.
 
+From our analysis, we found that the variables that contribute
+significantly to wine quality were fixed acidity, volatile acidity,
+residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide,
+density, pH, and sulfates. Beta weights can be rank ordered to determine
+which variable is the strongest predictor. Variables with the biggest
+beta have the strongest influence in wine quality which can be
+determined from the regression coefficient. The predictors from
+strongest to weakest influence in wine quality were
+
 ### Discussion & Conclusion
 
+To answer our research question "what chemical components contribute to
+the quality of wine?" we implemented a stepwise AIC test to determine
+model with the most significant predictor variables and calculated the
+beta weights and p-values for each of the variables.
+
 -   what chemical components contribute to wine quality
+
 -   future research suggestions
+
+In the future, to improve the accuracy of the model, different stepwise
+algorithms (p-values for example) can be evaluated and adjusted. There
+are many different methods such as through feature engineering, viewing
+potential interaction terms, or other performance measurements such as
+machine learning algorithms to better predict our results.
+
 -   suggestions to wine valley?
 
 ### Reference
