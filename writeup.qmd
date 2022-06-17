@@ -431,10 +431,20 @@ emplogitplot1(good_wine ~ c_alcohol + color,
               ngroups = 20)
 ```
 
+When conducting a logistic regression, it is important to check the
+conditions are satisfied. When evaluating if the log-odds have a linear
+relationship with the predictors, we find that the conditions for
+linearity are not satisfied for all the variables. The linearity
+conditions are particularly not fulfilled for the variables free sulfur
+dioxide (the spread takes on a curved shape), total sulfur dioxide (the
+spread has similarly curved shape), and sulphates (the data points
+appear to be randomly dispersed).
 
-Not every variables satisfy the linearity condition. (This can be mentioned in the limitation part of the final report.)
-The independence is satisfied. The Vinho Verde region is a vast region
-spreading 15500 hectareas of vineyards in far-north Portugal, and the data are not collected across time.
+The independence conditions, however, are satisfied. The Vinho Verde
+region is a vast region spreading 15500 hectareas of vineyards in
+far-north Portugal allowing the observations to be collected
+independently from each other and the accumulated data are not collected
+across an extended period of time.
 
 ### Results
 
@@ -442,12 +452,34 @@ spreading 15500 hectareas of vineyards in far-north Portugal, and the data are n
   - full model
   - best AIC model
   - AIC BIC ROC
--   model selection: do not include the interactive terms due to parsimonious. because the ROC does not improve much. 
+-   model selection: do not include the interactive terms due to parsimonious. because the ROC does not improve much.
+
+From our analysis, we found that the variables that contribute
+significantly to wine quality were fixed acidity, volatile acidity,
+residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide,
+density, pH, and sulfates. Beta weights can be rank ordered to determine
+which variable is the strongest predictor. Variables with the biggest
+beta have the strongest influence in wine quality which can be
+determined from the regression coefficient. The predictors from
+strongest to weakest influence in wine quality were
 
 ### Discussion & Conclusion
 
+To answer our research question "what chemical components contribute to
+the quality of wine?" we implemented a stepwise AIC test to determine
+model with the most significant predictor variables and calculated the
+beta weights and p-values for each of the variables.
+
 -   what chemical components contribute to wine quality
+
 -   future research suggestions
+
+In the future, to improve the accuracy of the model, different stepwise
+algorithms (p-values for example) can be evaluated and adjusted. There
+are many different methods such as through feature engineering, viewing
+potential interaction terms, or other performance measurements such as
+machine learning algorithms to better predict our results.
+
 -   suggestions to wine valley?
 
 ### Reference
