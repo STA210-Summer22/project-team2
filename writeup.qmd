@@ -370,7 +370,7 @@ wine_full_fit <- predict(wine_fit_full, wine_train, type = "prob") %>% bind_cols
 
 We fit both the full model with interactive terms and the initial Best AIC model without interactive terms to the training data.
 
-```{r, echo=FALSE, fig.width=6, fig.height=5, fig.align='center'}
+```{r, echo=FALSE, fig.width=4, fig.height=3, fig.align='center'}
 wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
   bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
