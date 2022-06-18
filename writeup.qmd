@@ -308,17 +308,6 @@ best_AIC_fit <- predict(best_AIC_model, wine_train) %>% bind_cols(wine_train)
 best_AIC_fit <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
 ```
 
-```{r, echo=FALSE, fig.width=3, fig.height=2, fig.align='center'}
-best_AIC_pred <- predict(best_AIC_model, wine_test) %>% bind_cols(wine_test)
-best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
-best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
-  ggplot(aes(x = 1 - specificity, y = sensitivity)) +
-  geom_line() +
-  labs(
-    title = "Best AIC Model's ROC Curve on Prediction"
-  )
-```
-
 ## Model Evaluation
 
 #### Full Model
@@ -450,6 +439,17 @@ aoc_p <- ggplot(metrics %>% filter(.metric == "roc_auc"), aes(x = id, y = .estim
     group = model, color = model)) + geom_point() + geom_line() + labs(title = "ROC-AUC", x = "Folds", y = "Estimate") + theme_bw()
 
 plot_grid(acc_p, aoc_p, nrow = 2)
+```
+
+```{r, echo=FALSE, fig.width=3, fig.height=2, fig.align='center'}
+best_AIC_pred <- predict(best_AIC_model, wine_test) %>% bind_cols(wine_test)
+best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
+best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
+  ggplot(aes(x = 1 - specificity, y = sensitivity)) +
+  geom_line() +
+  labs(
+    title = "Best AIC Model's ROC Curve on Prediction"
+  )
 ```
 
 ## Limitations
