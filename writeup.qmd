@@ -607,7 +607,9 @@ of grapes and wines. 
 Many analytical methods for sulfur dioxide determination are quite
 outdated but our research can be used as an impetus to fund and
 significantly improve research in the specific characteristics of wine
-quality. Reference
+quality.
+
+### References
 
 Coli, Marina Sonegheti et al. Chloride concentration in red wines:
 influence of terroir and grape type. Food Science and Technology
