@@ -307,7 +307,7 @@ selected:
 
 ### Model Evaluation
 
-#### Full Model 
+#### Full Model
 
 Then, considering that we have two types of wine--red wine and white
 wine, and we have seen potential interactive effects between the color
@@ -567,15 +567,12 @@ factor.
 
 -   Negative effects:
 
-    Chlorides: a major contributor to saltiness.
-    Volatile Acidity: a kind of acid which produces vinegar-like taste
-    in wine.
+    Chlorides: a major contributor to saltiness. Volatile Acidity: a
+    kind of acid which produces vinegar-like taste in wine.
 
--   Positive effects:
-    pH: low pH wines will taste tart and crisp.
+-   Positive effects: pH: low pH wines will taste tart and crisp.
     Sulphates: sulphates protect wine against oxidation, which can
-    affect the color and taste
-    of wine.
+    affect the color and taste of wine.
 
 In the future, to improve the accuracy of the model, different stepwise
 algorithms (p-values for example) can be evaluated and adjusted. There
@@ -583,7 +580,34 @@ are many different methods such as through feature engineering, viewing
 potential interaction terms, or other performance measurements such as
 machine learning algorithms to better predict our results.
 
-### Reference
+Analytical methods in the past century have permitted researchers to
+gain detailed knowledge about the sugars and acids present in the
+wine-making operation. Analysis and control of oxidation through
+measuring both oxygen concentrations and sulfur dioxide concentrations
+in grape juice and wine have resulted in significant improvements in
+wine quality. Our results encourage further development in research to
+measuring sulfur dioxide and the pH of grapes.
+
+Quality in any wine is a function of the potential quality in the grape
+and the conversion of grapes to wine. From our analysis, acidity is
+particularly important for clean, fruity, balanced tastes. Low acidity
+is also undesirable because it often leads to problems with fermentation
+and preservation of the wine which manifest themselves as undesirable
+tastes in the final wine.
+
+Moreover analytical methods for sulfur dioxide determination can be
+improved by research for wineyards such as techniques for measuring
+phenols and enzymes or more precise methods of measuring acids of grapes
+and wines. Sulfur dioxide controls oxidation in wines, but too much
+gives the wine a very unpleasant flavor. Techniques for measuring
+phenols and enzymes are still being developed in enology laboratories,
+as are more precise methods of measuring residual sugars and the acids
+of grapes and wines. 
+
+Many analytical methods for sulfur dioxide determination are quite
+outdated but our research can be used as an impetus to fund and
+significantly improve research in the specific characteristics of wine
+quality. Reference
 
 Coli, Marina Sonegheti et al. Chloride concentration in red wines:
 influence of terroir and grape type. Food Science and Technology
