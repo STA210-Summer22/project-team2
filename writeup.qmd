@@ -240,7 +240,9 @@ AIC test, we found that the combination of variables with the lowest AIC
 values were fixed acidity, volatile acidity, residual sugar, chlorides,
 free sulfur dioxide, total sulfur dioxide, density, pH, and sulphates.
 
-Data split: we split the data into 25% testing set and 75% training set.
+We split the data into 25% testing set and 75% training set. The
+training set is used to develop models, and the test set is used for
+estimating a final, unbiased assessment of the model's performance.
 
 ```{r datasplit, echo=FALSE}
 set.seed(222)
@@ -347,13 +349,12 @@ kable(tidy(wine_fit_full), digits = 3)
 $\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 385.310 + 0.401*fixed~acidity - 3.865*volatile~acidity + 0.256 * residual~sugar - 10.221*chlorides + 0.017 * free.sulfur.dioxide - 0.021*total.sulfur.dioxide - 375.495*density + 0.996*pH + 4.272*sulphates + 0.634*alcohol + 150.216*colorwhite - 0.004*free.sulfur.dioxide x colorwhite + 0.02*total.sulfur.dioxide x colorwhite - 154.703*density x colorwhite + 1.946*pH x colorwhite - 2.219*sulphates x colorwhite - 0.316*alcohol x colorwhite$In
 this model, red wine is picked as the baseline. For example, the odds of
 being classified as 5 'good wine' for white wine are expected to be
-exp(-0.054) = 0.947 times the odds for red wine,
-holding all else constant.
+exp(-0.054) = 0.947 times the odds for red wine, holding all else
+constant.
 
 From the EDA, we can see that there is no significant difference between
 the alcohol concentration between red and white wine, so we remove the
-interactive terms of alcohol and
-colorwhite.
+interactive terms of alcohol and colorwhite.
 
 ```{r, echo=FALSE}
 wine_full_test <- wine_wflow_full %>%
@@ -388,7 +389,8 @@ wine quality and good wine quality and bad wine quality as bad wine
 quality.
 
 We found that the AUC value of the logistic model was 0.815 and the AUC
-value of the best AIC model was 0.811, resulting in very similar values.
+value of the best AIC model was 0.811, suggesting that the two models
+have similar performances.
 
 ```{r, echo=FALSE}
 aoc_logistic <- wine_full_fit %>% 
@@ -576,12 +578,10 @@ factor.
     of wine.
 
 In the future, to improve the accuracy of the model, different stepwise
-algorithms (p-values for
-example) can be evaluated and adjusted. There are many different methods
-such as through
-feature engineering, viewing potential interaction terms, or other
-performance measurements
-such as machine learning algorithms to better predict our results.
+algorithms (p-values for example) can be evaluated and adjusted. There
+are many different methods such as through feature engineering, viewing
+potential interaction terms, or other performance measurements such as
+machine learning algorithms to better predict our results.
 
 ### Reference
 
