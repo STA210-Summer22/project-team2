@@ -1,5 +1,5 @@
 ---
-title: "What Makes a Good Glass of Wine>"
+title: "What Makes a Good Glass of Wine?"
 subtitle: "STA 210 - Summer 2022"
 author: "Team 2 - Alicia Gong, Ashley Chen, Abdel Shehata, Claire Tan"
 date: "6-16-2022"
