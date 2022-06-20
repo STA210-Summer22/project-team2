@@ -2,7 +2,6 @@
 editor_options:
   markdown:
     wrap: 72
-output: pdf_document
 ---
 
 # What Makes a Good Glass of Wine?
