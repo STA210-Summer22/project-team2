@@ -31,6 +31,7 @@ library(Stat2Data)
 
 ```{r echo=FALSE, message=FALSE}
 #| label: load data
+set.seed(222)
 redwine <- read.csv("data/winequality-red.csv", sep = ";")
 whitewine <- read.csv("data/winequality-white.csv", sep = ";")
 redwine <- redwine %>% mutate(color="red")
@@ -79,6 +80,8 @@ Portuguese wine industry.
 
 \par
 
+We are curious about what makes a good glass of Vinho Verde wine? How do wine experts evaluate the quality of wine? We often read that a wine's quality is related with its aroma, sweetness, fruitness, and mellowness, but do the wine experts also use this common-sense standard whe judging wine's quality? Scientifically speaking, what are the chemical components contribute to these characteristics? We predict that chemical components which contribute to wine's aroma, sweeteness, ripeness and freshness will be influential to wine's quality measure points.
+
 Our goal is to produce a classification model that best explains how
 different chemical compositions of the Portuguese "Vinho Verde" wine
 affects the variation of the wine quality.
@@ -103,9 +106,12 @@ there might be a little uncertainty in collecting the exact numbers for
 each numbers. However, since the Vinho Verde region is a vast region
 spreading 15500 hectares of vineyards in far-north Portugal, this
 uncertainty shouldn't be significant in our analysis or project. Thus,
-we will assume that the data are independent and random
+we will assume that the data are independent and random.
+
+In our analysis, we defines "good wine" as wine that receives quality measure scores higher than 7. This is because, the authoratative wine megazine 'Wine Spectator' used a 100-point scale to measure wine's quality, and in their system, wine that scores at least '80' is defined as 'Good'. In our data, the highest score than a wine can get is 9, 9 x 80% = 7.2. So we choose 7 as our cut-off point.
 
 ```{r datawrangling, echo=FALSE}
+set.seed(222)
 wine <- wine %>%
   mutate(good_wine = if_else(quality >= 7,"1","0"))
 wine <- wine %>%
@@ -181,6 +187,14 @@ p12 <- ggplot(data = wine, aes(x = c_alcohol) ) +
 plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ncol = 3, nrow = 4)
 ```
 
+The EDA shows that:
+
+- Most variables are normally distributed.
+
+- Residual sugar, chlorides, and sulphates are slightly skewed to the right.
+
+- Free sulfur dioxide and alcohol have a strongly right-skewed distribution.
+
 ```{r, echo=FALSE, fig.height=4, fig.width=8, fig.align='center'}
 a1 <- ggplot(wine, aes(y = c_alcohol, x = as.factor(good_wine), color = color)) + 
   geom_boxplot() + 
@@ -220,6 +234,7 @@ a9 <- ggplot(wine, aes(y = c_free.sulfur.dioxide, x = as.factor(good_wine), colo
 
 plot_grid(a1, a2, a3, a4, a5, a6, a7, a8, a9, ncol = 3, nrow = 3)
 ```
+- Almost for all variables, except for alcohol, there exists significant difference between red and white wine. Therefore, we would consider the add interaction between color and other predictor variables in our model.
 
 ### Methodology
 
@@ -245,7 +260,7 @@ training set is used to develop models, and the test set is used for
 estimating a final, unbiased assessment of the model's performance.
 
 ```{r datasplit, echo=FALSE}
-set.seed(222)
+set.seed(1234)
 
 wine_split <- initial_split(wine, prop = 3/4)
 wine_train <- training(wine_split)
@@ -253,9 +268,10 @@ wine_test <- training(wine_split)
 ```
 
 ```{r, echo=FALSE}
+set.seed(1234)
 AIC_fit <- logistic_reg() %>%
   set_engine("glm") %>%
-  fit(good_wine~.-c_citric.acid-quality-good_wine_names, data = wine_train)
+  fit(good_wine~.-quality-good_wine_names, data = wine_train)
 
 AIC_fit <- repair_call(AIC_fit, data = wine_train)
 AIC_fit_engine <- AIC_fit %>% extract_fit_engine() 
@@ -268,9 +284,12 @@ best_AIC_model <- stepAIC(AIC_fit_engine, direction="forward", trace=FALSE)
 kable(tidy(best_AIC_model), digits = 3)
 ```
 
-$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 399.637 + 0.452*fixed~acidity - 3.873*volatile~acidity + 0.212 * residual~sugar - 8.125*chlorides + 0.014*free.sulfur.dioxide - 0.004*total.sulfur.dioxide - 420.73*density + 2.663*pH + 2.605*sulphates + 0.48*alcohol - 0.936*colorwhite$
+$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 362.972 + 0.455 \times fixed~acidity - 3.898 \times volatile~acidity - 0.267 \times citric~acid + 0.033 \times residual~sugar - 7.351 \times chlorides + 0.012 \times free~sulfur~dioxide - 0.004 \times total~sulfur~dioxide - 382.399 \times density + 2.207 \times pH + 2.525 \times sulphates + 0.492 \times alcohol - 0.826 \times colorwhite$
+
+In this model, red wine is picked as the baseline. For example, the odds of being classified as 'good wine' for white wine are expected to be exp(-0.826) = 0.44 times the odds for red wine, holding all else constant.
 
 ```{r, include=FALSE}
+set.seed(222)
 best_AIC_fit <- predict(best_AIC_model, wine_train) %>% bind_cols(wine_train)
 best_AIC_fit <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
 ```
@@ -322,21 +341,19 @@ wine_spec <- logistic_reg() %>% set_engine("glm")
 ```
 
 ```{r, echo=FALSE}
+set.seed(222)
 wine_rec_full <- recipe(
   good_wine ~., data = wine_train) %>%
-  step_rm(good_wine_names) %>%
   step_rm(quality) %>%
-  step_rm(c_citric.acid) %>%
+  step_rm(good_wine_names) %>%
   step_dummy(all_nominal_predictors()) %>%
   step_interact(terms = ~starts_with("c_"):starts_with("color")) %>%
-  step_rm(c_chlorides_x_color_white) %>%
-  step_rm(c_residual.sugar_x_color_white) %>%
-  step_rm(c_volatile.acidity_x_color_white) %>%
-  step_rm(c_fixed.acidity_x_color_white) %>%
+  step_rm(c_alcohol_x_color_white) %>%
   step_zv(all_predictors())
 ```
 
 ```{r, echo=FALSE}
+set.seed(222)
 wine_wflow_full <- workflow() %>%
   add_model(wine_spec) %>%
   add_recipe(wine_rec_full)
@@ -346,15 +363,10 @@ wine_fit_full <- wine_wflow_full %>%
 kable(tidy(wine_fit_full), digits = 3)
 ```
 
-$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 385.310 + 0.401*fixed~acidity - 3.865*volatile~acidity + 0.256 * residual~sugar - 10.221*chlorides + 0.017 * free.sulfur.dioxide - 0.021*total.sulfur.dioxide - 375.495*density + 0.996*pH + 4.272*sulphates + 0.634*alcohol + 150.216*colorwhite - 0.004*free.sulfur.dioxide x colorwhite + 0.02*total.sulfur.dioxide x colorwhite - 154.703*density x colorwhite + 1.946*pH x colorwhite - 2.219*sulphates x colorwhite - 0.316*alcohol x colorwhite$In
-this model, red wine is picked as the baseline. For example, the odds of
-being classified as 5 'good wine' for white wine are expected to be
-exp(-0.054) = 0.947 times the odds for red wine, holding all else
-constant.
+$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 395.214 + 0.451 \times fixed~acidity - 2.619 \times volatile~acidity + 0.598 \times citric~acid + 0.296 \times residual~sugar - 8.222 \times chlorides + 0.018 \times free.sulfur.dioxide - 0.020 \times total.sulfur.dioxide - 413.913 \times density + 1.689 \times pH + 3.746 \times sulphates + 0.448 \times alcohol + 9.145 \times colorwhite - 0.093 \times fixed~acidity:colorwhite - 1.677 \times volatile~acidity:colorwhite - 1.325 \times citric~acid:colorwhite - 0.082 \times residual~sugar:colorwhite - 2.94 \times chlorides:colorwhite - 0.008 \times free~sulfur~dioxide:colorwhite + 0.019 \times total~sulfur~dioxide:colorwhite -9.726 \times density:colorwhite + 0.554 \times pH:colorwhite - 1.639 \times sulphates:colorwhite$
 
-From the EDA, we can see that there is no significant difference between
-the alcohol concentration between red and white wine, so we remove the
-interactive terms of alcohol and colorwhite.
+The interactive terms between predictor variables and colorwhite are used to assess the interactive effects between other predictor variables and wine's color. Red wine is used as baseline here. From the EDA, we can see that there is no significant difference between the alcohol concentration between red and white wine, so we did not consider the
+interactive effects between alcohol and colorwhite.
 
 ```{r, echo=FALSE}
 wine_full_test <- wine_wflow_full %>%
@@ -371,7 +383,7 @@ model performed more optimally. We fit both the full model with
 interactive terms and the initial Best AIC model without interactive
 terms to the training data.
 
-```{r, echo=FALSE, fig.width=3, fig.height=2, fig.align='center'}
+```{r, echo=FALSE, fig.width=5, fig.height=4, fig.align='center'}
 wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
   bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
@@ -439,9 +451,7 @@ wine_wflow_reduce <- workflow() %>%
 ```{r, echo=FALSE}
 set.seed(345)
 folds <- vfold_cv(wine_train, v = 10)
-```
 
-```{r, echo=FALSE}
 wine_full_rs <- wine_wflow_full %>%
   fit_resamples(folds)
 
@@ -468,10 +478,12 @@ plot_grid(acc_p, aoc_p, nrow = 2)
 ```
 
 The two models have similar accuracy and the ROC-AUC values for the 10
-folds, so due to the principles of parsimony (i.e. models with fewer
+folds, so due to the principles of parsimony (i.e. model that provides simpler explanation and has fewer
 terms), we prefer the more reduced one or the best AIC model fit.
 
-```{r, echo=FALSE, fig.width=3, fig.height=2, fig.align='center'}
+At last, we fit the picked model--Best AIC Model, to the test data, to assess its ability on prediction. The following ROC curve plot shows that the Best AIC Model is doing pretty well on predicting. 
+
+```{r, echo=FALSE, fig.width=5, fig.height=4, fig.align='center'}
 best_AIC_pred <- predict(best_AIC_model, wine_test) %>% bind_cols(wine_test)
 best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
 best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
@@ -551,7 +563,7 @@ quality of wine. Due to the principles of parsimonious, we prefer the
 simpler model. Therefore, we choose the reduced Best AIC Model as our
 best model.
 
-$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 399.637 + 0.452*fixed~acidity - 3.873*volatile~acidity + 0.212 * residual~sugar - 8.125*chlorides + 0.014*free.sulfur.dioxide - 0.004*total.sulfur.dioxide - 420.73*density + 2.663*pH + 2.605*sulphates + 0.48*alcohol - 0.936*colorwhite$
+$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 362.972 + 0.455 \times fixed~acidity - 3.898 \times volatile~acidity - 0.267 \times citric~acid + 0.033 \times residual~sugar - 7.351 \times chlorides + 0.012 \times free~sulfur~dioxide - 0.004 \times total~sulfur~dioxide - 382.399 \times density + 2.207 \times pH + 2.525 \times sulphates + 0.492 \times alcohol - 0.826 \times colorwhite$
 
 ### Discussion & Conclusion
 
@@ -567,13 +579,18 @@ factor.
 
 -   Negative effects:
 
-    Chlorides: a major contributor to saltiness. Volatile Acidity: a
-    kind of acid which produces vinegar-like taste in wine.
+    Chlorides: a major contributor to saltiness.
+      
+    Volatile Acidity: a kind of acid which makes wine tastes like vinegar.
 
--   Positive effects: pH: low pH wines will taste tart and crisp.
-    Sulphates: sulphates protect wine against oxidation, which can
-    affect the color and taste of wine.
+-   Positive effects: 
 
+    pH: wine with low pH tastes tart and crisp, and higher pH adds to wine's ripeness.
+    
+    Sulphates: a food preservative widely used in winemaking which protects wine against oxidation, and     
+    maintains the flavor and freshness of wine. 
+
+The result shows that, under wine experts' standards, wine that tastes more salty and vinegary earns lower grades; on the other hand, wine taste riper, mellower, fresher receive higher grades. This results is coherent to our prediction. 
 In the future, to improve the accuracy of the model, different stepwise
 algorithms (p-values for example) can be evaluated and adjusted. There
 are many different methods such as through feature engineering, viewing
