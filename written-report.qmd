@@ -44,83 +44,86 @@ wine <- slice(wine, sample(1:n()))
 
 #### Introduction
 
-About 234 million hectoliters of wine were consumed in 2020, worldwide,
-with the US making up approximately 14% of that consumption (Karlsson
-2020). Since wine composition and wine quality varies widely, it raises
-the question: what makes a good wine?
+In 2020 alone, about 234 million hectoliters of wine were consumed
+worldwide, with the US making up approximately 14% of that consumption
+(Karlsson 2020). Both wine consumption and wine production are essential
+parts of many cultures and economies around the world. For some
+communities, wine production is their primary economic means to
+survival, and some wine regions are even recognized by UNESCO as World
+Hertiage sites. Thus, it is important to be able to assess the quality
+of wine based on its physicochemical components. Since wine composition
+and wine quality varies widely, it raises the question: what makes a
+good wine? More specifically, what chemical compositions of wine affect
+the variation of wine quality? To answer this question, we will analyze
+the wine quality dataset from Vinho Verde vineyard in Portugal, and more
+importantly try to narrow down our question to make it possible for it
+to be supported by evidence.
 
 \par
 
-To answer that question, we will analyze the wine quality dataset from
-Vinho Verde vineyard in Portugal, and more importantly try to narrow
-down our question to make it possible for it to be supported by
-evidence. Below is the introduction to our research:
+"Vinho Verde" wine is exclusively produced in the demarcated region of
+Vinho Verde in northwestern Portugal, which is one of the largest and
+oldest wine regions in the world and home to thousands of producers,
+generating a wealth of economic activity and jobs and strongly
+contributing to the development of the Vinho province and the country as
+a whole. This wine has its own unique system of production, as it is
+only produced from the indigenous grape varieties of the region.
+Additionally, the wine produced in Vinho Verde also enjoys high
+reputation worldwide, and is recurrently awarded in national and
+international competitions.
 
 \par
 
-Project Goal: To identify variables that are important in explaining
-variation in the response. "Vinho Verde" is the kind of wine exclusively
-produced in the demarcated region of Vinho Verde in northwestern
-Portugal. The Vinho Verde wine has its own unique system of production
-and is only produced from the indigenous grape varieties of the region.
-Vinho Verde region is one of the largest and oldest wine regions in the
-world, and is home to thousands of producers, generating a wealth of
-economic activity and jobs, and strongly contributes to the development
-of Vinho province and the country. The wine produced in Vinho Verde also
-enjoys high reputation worldwide. It is recurrently awarded in national
-and international competitions. The goal of this dataset is to model
-wine quality based on physicochemical tests. We believe that this
-dataset can also be used to analyze the relationship between different
-chemical compositions and the ratings of wine quality. This dataset can
-also be used to analyze what chemical factors are attributable to the
-final rating of Vinho Verde wine. Our research may shed light on future
+We are curious about what exactly makes a good glass of Vinho Verde
+wine, from a scientific standpoint. Wine-drinkers commonly relate the
+quality of a wine to its aroma or sweetness, but these standards are
+subjective to the person drinking the wine. Because the chemical factors
+of wine are what contribute to these varying characteristics, we predict
+that chemical components which contribute to wine's aroma, sweetness,
+ripeness and freshness will be influential to wine's quality measure
+points.
+
+\par
+
+By investigating and analyzing the chemical factors attributable to the
+final rating of Vinho Verde wine, our research may shed light on future
 research and development directions for improving the quality of Vinho
 Verde wine, which may also contribute to the competitiveness of
-Portuguese wine industry.
-
-\par
-
-We are curious about what makes a good glass of Vinho Verde wine? How do
-wine experts evaluate the quality of wine? We often read that a wine's
-quality is related with its aroma, sweetness, tartness, and mellowness,
-but do the wine experts also use this common-sense standard we judging
-wine's quality? Scientifically speaking, what are the chemical
-components contribute to these characteristics? We predict that chemical
-components which contribute to wine's aroma, sweetness, ripeness and
-freshness will be influential to wine's quality measure points.
-
-Our goal is to produce a classification model that best explains how
-different chemical compositions of the Portuguese "Vinho Verde" wine
-affects the variation of the wine quality.
+Portuguese wine industry. Thus, the overall goal of this project is to
+produce a classification model that best explains how different chemical
+compositions of the Portuguese "Vinho Verde" wine affects the variation
+of the wine quality.
 
 #### Data Introduction
 
 The Wine Quality dataset was collected from Vinho Verde wine Samples,
-from the North of Portugal. The data was originally donated in 2009 by
+from northern Portugal. The data was originally donated in 2009 by
 Professor Cortez. The specific mechanism of the collection of the data
 was lab work done on different wines to measure their chemical
-attributes (like acidity etc.). The quality of the wine however was
-obtained through the average rating of three wine experts. The dataset
-is divided into two: Red wine and White wine. Red Wine has 1599
-observations, and white wine has 4898 observations (each observation
-being a specific wine). Information about the wine include but are not
-limited to: pH, Density, Acidity, and alcohol content.
+attributes (such as acidity). The quality of the wine was obtained
+through the average rating of three wine experts. The dataset is divided
+into two: Red wine and White wine. Red Wine has 1599 observations, and
+white wine has 4898 observations (each observation being a specific
+wine). Key variables include:
+
+-   `quality`: wine quality, rated on a scale from 0-9.
+-   `volatile.acidity`: amount of gaseous acid in wine
+-   `chlorides`: amount of salt in wine
+-   `total.sulfur.dioxide`: amount of free and bound forms of $SO_2$ in
+    wine
+-   `pH`: acidity of wine
+-   `sulphates`: amount of sulphates in wine
+-   `alcohol`: percent alcohol content of the wine
 
 \par
 
-Each observation is a specific wine from the Vinho Verde region. Thus,
-there might be a little uncertainty in collecting the exact numbers for
-each numbers. However, since the Vinho Verde region is a vast region
-spreading 15500 hectares of vineyards in far-north Portugal, this
-uncertainty shouldn't be significant in our analysis or project. Thus,
-we will assume that the data are independent and random.
-
-In our analysis, we defines "good wine" as wine that receives quality
-measure scores higher than 7. This is because, the wine magazine 'Wine
-Spectator' used a 100-point scale to measure wine's quality, and in
-their system, wine that scores at least '80' is defined as 'Good'. In
-our data, the highest score than a wine can get is 9, 9 x 80% = 7.2. So
-we choose 7 as our cut-off point.
+In our analysis, we split `quality` into "good wine" and "bad wine",
+defining "good wine" as wine that receives a quality score higher than
+7. We based this on the system of the wine magazine 'Wine Spectator', in
+which a score of at least '80' (on a 100-point scale) is defined as
+'Good'. In our data, the highest score a wine can get is 9, and 0.8 \* 9
+= 7.2, so we chose 7 as our cut-off point, and created a new variable
+`good_wine` that is 1 for good wine, and 0 otherwise,
 
 ```{r datawrangling, echo=FALSE}
 set.seed(222)
@@ -137,11 +140,14 @@ colnames(wine)[1:11] = paste("c_", no1, sep = "")
 
 #### Exploratory Data Analysis
 
-We first graphed potential predictor variables to visualize the the
-distribution through histograms and boxplots.
+We first visualized the distributions of potential predictor variables
+through histograms. Then, we visualized the relationships between key
+predictor variables and the response variable `good_wine` through
+boxplots, and also investigated possible interaction effects between
+these predictor variables and the color of the wine.
 
 ```{r distributions, echo=FALSE, message=FALSE, fig.align = "center"}
-p1  <- ggplot(data = wine, aes(x = quality) ) + 
+p1  <- ggplot(data = wine, aes(x = good_wine) ) + 
   geom_bar(fill = "pink") + 
   labs(x = "quality")
 
@@ -199,16 +205,6 @@ p12 <- ggplot(data = wine, aes(x = c_alcohol) ) +
 plot_grid(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ncol = 3, nrow = 4)
 ```
 
-The EDA shows that:
-
--   Most variables are normally distributed.
-
--   Residual sugar, chlorides, and sulphates are slightly skewed to the
-    right.
-
--   Free sulfur dioxide and alcohol have a strongly right-skewed
-    distribution.
-
 ```{r, echo=FALSE, fig.height=4, fig.width=8, fig.align='center'}
 a1 <- ggplot(wine, aes(y = c_alcohol, x = as.factor(good_wine), color = color)) + 
   geom_boxplot() + 
@@ -249,10 +245,16 @@ a9 <- ggplot(wine, aes(y = c_free.sulfur.dioxide, x = as.factor(good_wine), colo
 plot_grid(a1, a2, a3, a4, a5, a6, a7, a8, a9, ncol = 3, nrow = 3)
 ```
 
-Almost for all variables, except for alcohol, there exists significant
-difference between red and white wine. Therefore, we would consider the
-add interaction between color and other predictor variables in our
-model.
+From this, we can see that most variables are normally distributed, but
+residual sugar, chlorides, and sulphates are slightly skewed to the
+right, while free sulfur dioxide and alcohol have a strongly
+right-skewed distribution. Additionally, the distribution of good and
+bad wine is quite unbalanced, as the number of observations categorized
+as not good greatly outnumbers the amount categorized as good. From the
+boxplot, we can see that for almost all variables expect alcohol, there
+exists a significant difference between red and white wine. Therefore,
+we will consider adding the interaction between color and other
+predictor variables in our model.
 
 ```{r, include=FALSE}
 pairs(quality ~ c_fixed.acidity + c_volatile.acidity + c_citric.acid + c_density + c_residual.sugar + c_chlorides, data=wine)
@@ -261,38 +263,58 @@ pairs(quality ~ c_free.sulfur.dioxide + c_total.sulfur.dioxide + c_pH + c_sulpha
 
 ```{r, echo=FALSE}
 # correlation coefficients for potential multicollinearity
-cor(wine$c_fixed.acidity, wine$c_citric.acid)
-cor(wine$c_fixed.acidity, wine$c_density)
-cor(wine$c_volatile.acidity, wine$c_citric.acid)
-cor(wine$c_density, wine$c_residual.sugar)
-cor(wine$c_free.sulfur.dioxide, wine$c_total.sulfur.dioxide)
+c1 <- cor(wine$c_fixed.acidity, wine$c_citric.acid)
+c2 <- cor(wine$c_fixed.acidity, wine$c_density)
+c3 <- cor(wine$c_volatile.acidity, wine$c_citric.acid)
+c4 <- cor(wine$c_density, wine$c_residual.sugar)
+c5 <- cor(wine$c_free.sulfur.dioxide, wine$c_total.sulfur.dioxide)
+
+Variables <- c("fixed acidity & citric acid",
+                            "fixed acidity & density", 
+                            "volatile acidity and citric acid", 
+                            "density & residual sugar", 
+                            "free sulfur dioxide and total sulfur dioxide")
+R_Coefficients <- c(c1, c2, c3, c4, c5)
+
+df <- data.frame(Variables, R_Coefficients)
+glimpse(df)
 ```
+
+Lastly, we calculated the correlation coefficients for some of our
+predictor variables to investigate multicollinearity, which is the
+ocurrence of high intercorrelations among two or more independent
+variables in a multiple regression model. This is a problem because it
+undermines the statistical significance of the predictor variables and
+makes it difficult to establish relationships. From our calculations, we
+can see that the correlation between free.sulfur.dioxide and
+total.sulfur.dioxide is 0.72, indicating a strong positive linear
+relationship, so multicollinearity exists between these two variables.
 
 ### Methodology
 
 #### Best AIC Model
 
 To select the most optimal model to fit our data, we decided to conduct
-a stepwise AIC model. We can operationalise this as the model with the
+a step-wise AIC model. We can operationalise this as the model with the
 lowest AIC value to supplement which variables to add to or omit from to
 choose the model with the smallest amount of error or lowest residual
 sum of squares. AIC is an estimator of in-sample prediction error and a
 lower AIC values can indicate a more parsimonious model.
 
-In this stepwise AIC test, an algorithm uses specific procedures in
-which the AIC values of different models calculated to determine what
-covariates are added to or removed from the model and this process is
-repeated several times in both directions. After conducting the stepwise
-AIC test, we found that the combination of variables with the lowest AIC
-values were fixed acidity, volatile acidity, residual sugar, chlorides,
-free sulfur dioxide, density, pH, and sulphates. After testing on
-multicollinearity, we found that the correlation coefficient between
-free.sulfur.dioxide and total.sulfur.dioxide is 0.72, which indicates
-strong positive linear relationship. We also know from the data
+In this step-wise AIC test, an algorithm uses specific procedures in
+which the AIC values of different models are calculated to determine
+what covariates are added to or removed from the model, and this process
+is repeated several times in both directions. In our EDA, we found
+multicollinearity in the strong positive linear relationship between
+free.sulfur.dioxide and total.sulfur.dioxide. We also know from the data
 description that total.sulfur dioxide includes free.sulfur.dioxide -
 whose concentration level could impact the smell and taste of the wine,
 thus impacting quality. So it is sufficient to include only one of these
-two variables in the model, and we choose free.sulfur.dioxide.
+two variables in the model, and we choose free.sulfur.dioxide. After
+conducting the step-wise AIC test, we found that the combination of
+variables with the lowest AIC values were fixed acidity, volatile
+acidity, residual sugar, chlorides, free sulfur dioxide, density, pH,
+and sulphates.
 
 We split the data into 25% testing set and 75% training set. The
 training set is used to develop models, and the test set is used for
@@ -334,35 +356,26 @@ best_AIC_fit <- predict(best_AIC_model, wine_train) %>% bind_cols(wine_train)
 best_AIC_fit <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
 ```
 
-After conducting the stepwise AIC test, the following variables are
+After conducting the step- wise AIC test, the following variables are
 selected:
 
--   Fixed Acidity: the amount of acid in wine that's not volatile (do
-    not evaporate fast).
-
--   Volatile Acidity: the amount of acetic acid in wine.
-
--   Citric Acid: citric acid is found in small quantities, and can add
-    freshness and flavor to wines.
-
--   Residual Sugar: the amount of sugar left after fermatation stops.
-
--   Chlorides: the amount of salt in the wine.
-
--   Free Sulfur Dioxide: the free amount of $SO_2$ exists in equilibrium
-    between molecular $SO_2$ and bisulfite ion.
-
--   Density: the density of the liquid.
-
--   pH: hydrogen ion concentration
-
--   Sulphates: produced by yeast, protecting wine against oxidation.
-
--   Alcohol: the percentage of wine's alcohol content.
+-   `fixed.acidity`: the amount of acid in wine that's not volatile (do
+    not evaporate fast)
+-   `volatile.acidity`: the amount of acetic acid in wine
+-   `citric.acid`: found in small quantities and can add freshness and
+    flavor to wines
+-   `residual.sugar`: amount of sugar left after fermentation
+-   `chlorides`: amount of salt in wine
+-   `free.sulfur.dioxide`: free amount of $SO_2$ exists in equilibrium
+    between molecular $SO_2$ and bisulfite ion
+-   `density`: density of wine measured in g/ml
+-   `pH`: acidity of wine and hydrogen ion concentration
+-   `sulphates`: produced by yeast, protecting wine against oxidation
+-   `alcohol`: percent alcohol content of the wine
 
 \pagebreak
 
-### Model Evaluation
+#### Model Evaluation
 
 #### Full Model
 
@@ -370,9 +383,9 @@ Then, considering that we have two types of wine--red wine and white
 wine, and we have seen potential interactive effects between the color
 of wine and the level of chemical components from the EDA, we decided to
 add interactive terms between color and other predictor variables. We
-compare the best AIC model with another logistic model with interactive
-terms. We will call the best AIC model as the reduced model, and the
-logistic model with interactive terms as the full model.
+compare the best AIC model with another logistic model that includes
+interactive terms. We will call the best AIC model the reduced model and
+the logistic model with interactive terms the full model.
 
 ```{r, echo=FALSE}
 wine_spec <- logistic_reg() %>% set_engine("glm")
@@ -417,7 +430,7 @@ concentration between red and white wine, so we did not consider the
 interactive effects between alcohol and colorwhite. We also removed
 citric acid, the interactive effect term of density:color_white,
 pH:color_white, residual.sugar:color_white, chlorides:color_white due to
-their high p-value.
+their high p-values.
 
 ```{r, echo=FALSE}
 wine_full_test <- wine_wflow_full2 %>%
@@ -494,7 +507,7 @@ kable(tidy(wine_fit_reduce), digits = 3)
 ```
 
 After deciding that we are going to stick with the best AIC model, we
-decide to remove citric acid, dut to its high p-value, to increase our
+decide to remove citric acid, due to its high p-value, to increase our
 model's accuracy.
 
 $\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 407.674 + 0.472 \times fixed~acidity - 3.397 \times volatile~acidity + 0.214 \times residual~sugar - 7.505 \times chlorides + 0.007 \times free~sulfur~dioxide - 427.514 \times density + 2.289 \times pH + 2.515 \times sulphates + 0.462 \times alcohol - 1.228 \times colorwhite$
@@ -543,18 +556,7 @@ plot_grid(acc_p, aoc_p, nrow = 2)
 The two models have similar accuracy and the ROC-AUC values for the 10
 folds, so due to the principles of parsimony (i.e. model that provides
 simpler explanation and has fewer terms), we prefer the more reduced one
-or the best AIC model fit.
-
-At last, we fit the picked model--Best AIC Model, to the test data, to
-assess its ability on prediction. The following ROC curve plot shows
-that the Best AIC Model is doing pretty well on predicting.
-
-```{r, echo=FALSE, fig.width=3, fig.height=2, message=FALSE, warning=FALSE, style= "float:right;position: relative; top: -80px;"}
-best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
-best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
-  ggplot(aes(x = 1 - specificity, y = sensitivity)) +
-  geom_line() + labs(title = "Best AIC Model's ROC-AUC Curve")
-```
+or the best AIC model fit. Thus, the best AIC model is our final model.
 
 #### Limitations
 
@@ -617,17 +619,35 @@ across an extended period of time.
 
 ### Results
 
-We first conducted a pairwise test to obtain a Best AIC Model with no
-interactive terms, which is our reduced model. Then we include the
-interactive terms and build another logistic model, as our full model.
-We compared these two models' ROC curves, AIC, BIC. We also check the
-two models' accuracy and ROC-AUC through cross-validation. We found out
-that the two models have similar performances when predicting the
-quality of wine. Due to the principles of parsimonious, we prefer the
-simpler model. Therefore, we choose the reduced Best AIC Model as our
-best model.
+Our final model is the reduced Best AIC model. To achieve this
+conclusion, we first conducted a pairwise test to obtain a Best AIC
+Model with no interactive terms, which is our reduced model. Then we
+include the interactive terms and build another logistic model, as our
+full model. We compared these two models' ROC curves, AIC, BIC. We also
+check the two models' accuracy and ROC-AUC through cross-validation. We
+found out that the two models have similar performances when predicting
+the quality of wine. Due to the principles of parsimonious, we prefer
+the simpler model. Therefore, we choose the reduced Best AIC Model as
+our best model.
 
 $\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 407.674 + 0.472 \times fixed~acidity - 3.397 \times volatile~acidity + 0.214 \times residual~sugar - 7.505 \times chlorides + 0.007 \times free~sulfur~dioxide - 427.514 \times density + 2.289 \times pH + 2.515 \times sulphates + 0.462 \times alcohol - 1.228 \times colorwhite$
+
+From this model, we can see that some influential factors might be
+chlorides, pH, sulphates, and volatile acidity. For example, the
+coefficient for pH is 2.289, which means that for every 1-point increase
+in pH, we expect the odds of wine being good to increase by a factor of
+exp(2.289) = 9.87, holding all else constant.
+
+To assess the model's predictive abilities, we fit it to test data. The
+following ROC curve plot shows that the Best AIC Model does fairly well
+in terms of predicting good wine vs bad wine.
+
+```{r, echo=FALSE, fig.width=3, fig.height=2, message=FALSE, warning=FALSE, style= "float:right;position: relative; top: -80px;"}
+best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
+best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
+  ggplot(aes(x = 1 - specificity, y = sensitivity)) +
+  geom_line() + labs(title = "Best AIC Model's ROC-AUC Curve")
+```
 
 ### Discussion & Conclusion
 
@@ -635,27 +655,23 @@ From our analysis, we found that the variables that contribute
 significantly to wine quality were fixed acidity, volatile acidity,
 residual sugar, chlorides, free sulfur dioxide, total sulfur dioxide,
 density, pH, and sulfates. Variables with biggest coefficients are
-chlorides, volatile acidity, pH and sulphates. It is worth-noticing that
+chlorides, volatile acidity, pH and sulphates. It is worth noting that
 although the coefficient of density is very high, wine's density varies
 between approximate 0.99 to 1, therefore it is impossible for wine'
-density to jump 1 unit. So we do not include density as a influential
+density to jump 1 unit. So we did not include density as a influential
 factor.
 
--   Negative effects:
-
-    Chlorides: a major contributor to saltiness.
-
-    Volatile Acidity: a kind of acid which makes wine tastes like
-    vinegar.
-
--   Positive effects:
-
-    pH: wine with low pH tastes tart and crisp, and higher pH adds to
-    wine's ripeness.
-
-    Sulphates: a food preservative widely used in winemaking which
-    protects wine against oxidation, and maintains the flavor and
-    freshness of wine.
+Some of the variables that negatively affected wine quality were
+chlorides and volatile acidity (meaning when these variables increased,
+quality was less likely to be good). Scientific reasons for this could
+be that chlorides are a major contributor to saltiness, and volatile
+acidity refers to the amount of acetic acid in wine, which is a kind of
+acid which makes wine tastes like vinegar. Some variables that
+positively affected wine quality were pH and sulphates. This could be
+because wine with low pH tastes tart and crisp, while higher pH adds to
+wine's ripeness. Additionally, sulphates are a food preservative widely
+used in winemaking which protects wine against oxidation and maintains
+the flavor and freshness of wine.
 
 The result shows that, under wine experts' standards, wine that tastes
 more salty and vinegary earns lower grades; on the other hand, wine
@@ -665,7 +681,11 @@ the model, different stepwise algorithms (p-values for example) can be
 evaluated and adjusted. There are many different methods such as through
 feature engineering, viewing potential interaction terms, or other
 performance measurements such as machine learning algorithms to better
-predict our results.
+predict our results. Furthermore, a limitation of our dataset is the
+unbalanced data, in which bad wine greatly outnumbers good wine. Thus,
+another potential step in future work could be assessing models that
+oversample good wine or downsample bad wine in order to address class
+unbalance, and compare these models to our Best AIC model.
 
 Analytical methods in the past century have permitted researchers to
 gain detailed knowledge about the sugars and acids present in the
