@@ -234,7 +234,8 @@ a9 <- ggplot(wine, aes(y = c_free.sulfur.dioxide, x = as.factor(good_wine), colo
 
 plot_grid(a1, a2, a3, a4, a5, a6, a7, a8, a9, ncol = 3, nrow = 3)
 ```
-- Almost for all variables, except for alcohol, there exists significant difference between red and white wine. Therefore, we would consider the add interaction between color and other predictor variables in our model.
+
+Almost for all variables, except for alcohol, there exists significant difference between red and white wine. Therefore, we would consider the add interaction between color and other predictor variables in our model.
 
 ### Methodology
 
@@ -383,7 +384,7 @@ model performed more optimally. We fit both the full model with
 interactive terms and the initial Best AIC model without interactive
 terms to the training data.
 
-```{r, echo=FALSE, fig.width=4, fig.height=3, fig.align='center'}
+```{r, echo=FALSE, fig.width=3, fig.height=2, style= "float:right;position: relative; top: -80px;"}
 wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
   bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
@@ -483,7 +484,7 @@ terms), we prefer the more reduced one or the best AIC model fit.
 
 At last, we fit the picked model--Best AIC Model, to the test data, to assess its ability on prediction. The following ROC curve plot shows that the Best AIC Model is doing pretty well on predicting. 
 
-```{r, echo=FALSE, fig.width=4, fig.height=3, fig.align='center'}
+```{r, echo=FALSE, fig.width=3, fig.height=2, message=FALSE, warning=FALSE, style= "float:right;position: relative; top: -80px;"}
 best_AIC_pred <- predict(best_AIC_model, wine_test) %>% bind_cols(wine_test)
 best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
 best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
@@ -587,8 +588,8 @@ factor.
 
     pH: wine with low pH tastes tart and crisp, and higher pH adds to wine's ripeness.
     
-    Sulphates: a food preservative widely used in winemaking which protects wine against oxidation, and     
-    maintains the flavor and freshness of wine. 
+    Sulphates: a food preservative widely used in winemaking which protects wine against 
+    oxidation, and maintains the flavor and freshness of wine. 
 
 The result shows that, under wine experts' standards, wine that tastes more salty and vinegary earns lower grades; on the other hand, wine taste riper, mellower, fresher receive higher grades. This results is coherent to our prediction. 
 In the future, to improve the accuracy of the model, different stepwise
@@ -627,12 +628,6 @@ as an impetus to fund and significantly improve research in the specific
 characteristics of wine quality.
 
 ### References
-
-Coli, Marina Sonegheti et al. Chloride concentration in red wines:
-influence of terroir and grape type. Food Science and Technology
-(Campinas) \[online\]. 2015, v. 35, n. 1 \[Accessed 17 June 2022\] , pp.
-95-99. Available from: https://doi.org/10.1590/1678-457X.6493. ISSN
-1678-457X. https://doi.org/10.1590/1678-457X.6493.
 
 Paulo Cortez, University of Minho, Guimarães, Portugal,
 http://www3.dsi.uminho.pt/pcortez A. Cerdeira, F. Almeida, T. Matos and
