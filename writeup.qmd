@@ -234,9 +234,21 @@ a9 <- ggplot(wine, aes(y = c_free.sulfur.dioxide, x = as.factor(good_wine), colo
 
 plot_grid(a1, a2, a3, a4, a5, a6, a7, a8, a9, ncol = 3, nrow = 3)
 ```
-
 Almost for all variables, except for alcohol, there exists significant difference between red and white wine. Therefore, we would consider the add interaction between color and other predictor variables in our model.
 
+```{r, include=FALSE}
+pairs(quality ~ c_fixed.acidity + c_volatile.acidity + c_citric.acid + c_density + c_residual.sugar + c_chlorides, data=wine)
+pairs(quality ~ c_free.sulfur.dioxide + c_total.sulfur.dioxide + c_pH + c_sulphates + c_alcohol, data=wine)
+```
+
+```{r, echo=FALSE}
+# correlation coefficients for potential multicollinearity
+cor(wine$c_fixed.acidity, wine$c_citric.acid)
+cor(wine$c_fixed.acidity, wine$c_density)
+cor(wine$c_volatile.acidity, wine$c_citric.acid)
+cor(wine$c_density, wine$c_residual.sugar)
+cor(wine$c_free.sulfur.dioxide, wine$c_total.sulfur.dioxide)
+```
 ### Methodology
 
 #### Best AIC Model
@@ -254,7 +266,7 @@ covariates are added to or removed from the model and this process is
 repeated several times in both directions. After conducting the stepwise
 AIC test, we found that the combination of variables with the lowest AIC
 values were fixed acidity, volatile acidity, residual sugar, chlorides,
-free sulfur dioxide, total sulfur dioxide, density, pH, and sulphates.
+free sulfur dioxide, density, pH, and sulphates. After testing on multicollinearity, we found that the correlation coefficient between free.sulfur.dioxide and total.sulfur.dioxide is 0.72, which indicates strong positive linear relationship. We also know from the data description that total.sulfur dioxide includes free.sulfur.dioxide - whose concentration level could impact the smell and taste of the wine, thus impacting quality. So it is sufficient to include only one of these two variables in the model, and we choose free.sulfur.dioxide.
 
 We split the data into 25% testing set and 75% training set. The
 training set is used to develop models, and the test set is used for
@@ -272,7 +284,7 @@ wine_test <- training(wine_split)
 set.seed(1234)
 AIC_fit <- logistic_reg() %>%
   set_engine("glm") %>%
-  fit(good_wine~.-quality-good_wine_names, data = wine_train)
+  fit(good_wine~.-c_total.sulfur.dioxide-quality-good_wine_names, data = wine_train)
 
 AIC_fit <- repair_call(AIC_fit, data = wine_train)
 AIC_fit_engine <- AIC_fit %>% extract_fit_engine() 
@@ -285,9 +297,7 @@ best_AIC_model <- stepAIC(AIC_fit_engine, direction="forward", trace=FALSE)
 kable(tidy(best_AIC_model), digits = 3)
 ```
 
-$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 362.972 + 0.455 \times fixed~acidity - 3.898 \times volatile~acidity - 0.267 \times citric~acid + 0.033 \times residual~sugar - 7.351 \times chlorides + 0.012 \times free~sulfur~dioxide - 0.004 \times total~sulfur~dioxide - 382.399 \times density + 2.207 \times pH + 2.525 \times sulphates + 0.492 \times alcohol - 0.826 \times colorwhite$
-
-In this model, red wine is picked as the baseline. For example, the odds of being classified as 'good wine' for white wine are expected to be exp(-0.826) = 0.44 times the odds for red wine, holding all else constant.
+In this model, red wine is picked as the baseline. For example, the odds of being classified as 'good wine' for white wine are expected to be exp(-0.826) = 0.30 times the odds for red wine, holding all else constant.
 
 ```{r, include=FALSE}
 set.seed(222)
@@ -312,8 +322,6 @@ selected:
 
 -   Free Sulfur Dioxide: the free amount of $SO_2$ exists in equilibrium
     between molecular $SO_2$ and bisulfite ion.
-
--   Total Sulfur Dioxide: the total amount of free and bounded $SO_2$
 
 -   Density: the density of the liquid.
 
@@ -343,37 +351,43 @@ wine_spec <- logistic_reg() %>% set_engine("glm")
 
 ```{r, echo=FALSE}
 set.seed(222)
-wine_rec_full <- recipe(
+wine_rec_full2 <- recipe(
   good_wine ~., data = wine_train) %>%
   step_rm(quality) %>%
   step_rm(good_wine_names) %>%
+  step_rm(c_total.sulfur.dioxide) %>%
+  step_rm(c_citric.acid) %>%
   step_dummy(all_nominal_predictors()) %>%
   step_interact(terms = ~starts_with("c_"):starts_with("color")) %>%
   step_rm(c_alcohol_x_color_white) %>%
+  step_rm(c_density_x_color_white) %>%
+  step_rm(c_pH_x_color_white) %>%
+  step_rm(c_residual.sugar_x_color_white) %>%
+  step_rm(c_chlorides_x_color_white) %>%
   step_zv(all_predictors())
 ```
 
 ```{r, echo=FALSE}
 set.seed(222)
-wine_wflow_full <- workflow() %>%
+wine_wflow_full2 <- workflow() %>%
   add_model(wine_spec) %>%
-  add_recipe(wine_rec_full)
+  add_recipe(wine_rec_full2)
 
-wine_fit_full <- wine_wflow_full %>%
+wine_fit_full2 <- wine_wflow_full2 %>%
   fit(data = wine_train)
-kable(tidy(wine_fit_full), digits = 3)
+kable(tidy(wine_fit_full2), digits = 3)
 ```
 
-$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 395.214 + 0.451 \times fixed~acidity - 2.619 \times volatile~acidity + 0.598 \times citric~acid + 0.296 \times residual~sugar - 8.222 \times chlorides + 0.018 \times free.sulfur.dioxide - 0.020 \times total.sulfur.dioxide - 413.913 \times density + 1.689 \times pH + 3.746 \times sulphates + 0.448 \times alcohol + 9.145 \times colorwhite - 0.093 \times fixed~acidity:colorwhite - 1.677 \times volatile~acidity:colorwhite - 1.325 \times citric~acid:colorwhite - 0.082 \times residual~sugar:colorwhite - 2.94 \times chlorides:colorwhite - 0.008 \times free~sulfur~dioxide:colorwhite + 0.019 \times total~sulfur~dioxide:colorwhite -9.726 \times density:colorwhite + 0.554 \times pH:colorwhite - 1.639 \times sulphates:colorwhite$
+$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 426.077 + 0.574 \times fixed~acidity - 3.002 \times volatile~acidity + 0.222 \times residual~sugar - 8.897 \times chlorides + 0.017 \times free.sulfur.dioxide - 447.221 \times density + 2.303 \times pH + 3.395 \times sulphates + 0.436 \times alcohol + 1.277 \times colorwhite - 0.229 \times fixed~acidity:colorwhite - 1.216 \times volatile~acidity:colorwhite + 0.026 \times free~sulfur~dioxide:colorwhite - 1.310 \times sulphates:colorwhite$
 
 The interactive terms between predictor variables and colorwhite are used to assess the interactive effects between other predictor variables and wine's color. Red wine is used as baseline here. From the EDA, we can see that there is no significant difference between the alcohol concentration between red and white wine, so we did not consider the
-interactive effects between alcohol and colorwhite.
+interactive effects between alcohol and colorwhite. We also removed citric acid, the interactive effect term of density:color_white, pH:color_white, residual.sugar:color_white, chlorides:color_white due to their high p-value.
 
 ```{r, echo=FALSE}
-wine_full_test <- wine_wflow_full %>%
+wine_full_test <- wine_wflow_full2 %>%
   fit(data = wine_test)
 
-wine_full_fit <- predict(wine_fit_full, wine_train, type = "prob") %>% bind_cols(wine_train)
+wine_full_fit2 <- predict(wine_fit_full2, wine_train, type = "prob") %>% bind_cols(wine_train)
 ```
 
 #### Model Selection
@@ -385,7 +399,7 @@ interactive terms and the initial Best AIC model without interactive
 terms to the training data.
 
 ```{r, echo=FALSE, fig.width=3, fig.height=2, style= "float:right;position: relative; top: -80px;"}
-wine_full_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
+wine_full_fit2 %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 1") %>%
   bind_rows(best_AIC_fit %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>% mutate(model = "Model 2")) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity, color = model)) +
   geom_line() + labs(title = "Two Models' ROC curves")
@@ -406,7 +420,7 @@ value of the best AIC model was 0.811, suggesting that the two models
 have similar performances.
 
 ```{r, echo=FALSE}
-aoc_logistic <- wine_full_fit %>% 
+aoc_logistic <- wine_full_fit2 %>% 
   roc_auc(truth = as.factor(good_wine), .pred_0) %>%
   mutate(model = "Logistic Model")
 
@@ -419,6 +433,31 @@ arrange(.metric) %>% relocate(model, .before = .metric)
 
 kable(twoaoc, digits = 3)
 ```
+```{r, include=FALSE}
+best_AIC_rec <- recipe(
+  good_wine ~ c_fixed.acidity + c_volatile.acidity + 
+    c_citric.acid + c_residual.sugar + c_chlorides + c_free.sulfur.dioxide + 
+    c_total.sulfur.dioxide + c_density + c_pH + c_sulphates + 
+    c_alcohol + quality + color + good_wine_names, data = wine_train) %>%
+  step_rm(c_citric.acid) %>%
+  step_rm(c_total.sulfur.dioxide) %>%
+  step_rm(quality) %>%
+  step_rm(good_wine_names) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+
+wine_wflow_reduce <- workflow() %>%
+  add_model(wine_spec) %>%
+  add_recipe(best_AIC_rec)
+
+wine_fit_reduce <- wine_wflow_reduce %>%
+  fit(data = wine_train)
+
+kable(tidy(wine_fit_reduce), digits = 3)
+```
+After deciding that we are going to stick with the best AIC model, we decide to remove citric acid, dut to its high p-value, to increase our model's accuracy.
+
+$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 407.674 + 0.472 \times fixed~acidity - 3.397 \times volatile~acidity + 0.214 \times residual~sugar - 7.505 \times chlorides + 0.007 \times free~sulfur~dioxide - 427.514 \times density + 2.289 \times pH + 2.515 \times sulphates + 0.462 \times alcohol - 1.228 \times colorwhite$
 
 #### Cross Validation
 
@@ -433,27 +472,10 @@ ROC-AUC values of each individual fold for the two models on a
 corresponding graph.
 
 ```{r, echo=FALSE}
-best_AIC_rec <- recipe(
-  good_wine ~ c_fixed.acidity + c_volatile.acidity + 
-    c_citric.acid + c_residual.sugar + c_chlorides + c_free.sulfur.dioxide + 
-    c_total.sulfur.dioxide + c_density + c_pH + c_sulphates + 
-    c_alcohol + quality + color + good_wine_names, data = wine_train) %>%
-  step_rm(c_citric.acid) %>%
-  step_rm(quality) %>%
-  step_rm(good_wine_names) %>%
-  step_dummy(all_nominal_predictors()) %>%
-  step_zv(all_predictors())
-
-wine_wflow_reduce <- workflow() %>%
-  add_model(wine_spec) %>%
-  add_recipe(best_AIC_rec)
-```
-
-```{r, echo=FALSE}
 set.seed(345)
 folds <- vfold_cv(wine_train, v = 10)
 
-wine_full_rs <- wine_wflow_full %>%
+wine_full_rs <- wine_wflow_full2 %>%
   fit_resamples(folds)
 
 wine_AIC_rs <- wine_wflow_reduce %>%
@@ -485,12 +507,10 @@ terms), we prefer the more reduced one or the best AIC model fit.
 At last, we fit the picked model--Best AIC Model, to the test data, to assess its ability on prediction. The following ROC curve plot shows that the Best AIC Model is doing pretty well on predicting. 
 
 ```{r, echo=FALSE, fig.width=3, fig.height=2, message=FALSE, warning=FALSE, style= "float:right;position: relative; top: -80px;"}
-best_AIC_pred <- predict(best_AIC_model, wine_test) %>% bind_cols(wine_test)
 best_AIC_pred <- best_AIC_fit %>% mutate(.pred_1 = exp(...1) / (1 + exp(...1))) %>% mutate(.pred_0 = 1 - .pred_1)
 best_AIC_pred %>% roc_curve(truth = as.factor(good_wine), .pred_0) %>%
   ggplot(aes(x = 1 - specificity, y = sensitivity)) +
   geom_line() + labs(title = "Best AIC Model's ROC-AUC Curve")
-
 ```
 
 #### Limitations
@@ -564,7 +584,7 @@ quality of wine. Due to the principles of parsimonious, we prefer the
 simpler model. Therefore, we choose the reduced Best AIC Model as our
 best model.
 
-$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 362.972 + 0.455 \times fixed~acidity - 3.898 \times volatile~acidity - 0.267 \times citric~acid + 0.033 \times residual~sugar - 7.351 \times chlorides + 0.012 \times free~sulfur~dioxide - 0.004 \times total~sulfur~dioxide - 382.399 \times density + 2.207 \times pH + 2.525 \times sulphates + 0.492 \times alcohol - 0.826 \times colorwhite$
+$\log\Big(\frac{\hat\pi}{1-\hat\pi}\Big) = 407.674 + 0.472 \times fixed~acidity - 3.397 \times volatile~acidity + 0.214 \times residual~sugar - 7.505 \times chlorides + 0.007 \times free~sulfur~dioxide - 427.514 \times density + 2.289 \times pH + 2.515 \times sulphates + 0.462 \times alcohol - 1.228 \times colorwhite$
 
 ### Discussion & Conclusion
 
