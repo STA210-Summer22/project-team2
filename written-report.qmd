@@ -277,7 +277,7 @@ Variables <- c("fixed acidity & citric acid",
 R_Coefficients <- c(c1, c2, c3, c4, c5)
 
 df <- data.frame(Variables, R_Coefficients)
-glimpse(df)
+kable(tibble(df), digits = 3)
 ```
 
 Lastly, we calculated the correlation coefficients for some of our
