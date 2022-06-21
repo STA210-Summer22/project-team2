@@ -283,7 +283,8 @@ kable(tibble(df), digits = 3)
 Lastly, we calculated the correlation coefficients for some of our
 predictor variables to investigate multicollinearity, which is the
 ocurrence of high intercorrelations among two or more independent
-variables in a multiple regression model. This is a problem because it
+variables in a multiple regression model. We picked the potential colinear pairs from plotting two pairing scatterplot matrixes, and the two pairng plots are included in the appendix. 
+Multicolinearity is a problem because it
 undermines the statistical significance of the predictor variables and
 makes it difficult to establish relationships. From our calculations, we
 can see that the correlation between free.sulfur.dioxide and
